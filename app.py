@@ -9,9 +9,8 @@ import google.generativeai as genai
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
 except:
-    # For local development, you can uncomment and add your key here
-    # API_KEY = "YOUR_API_KEY_HERE"
     st.error("⚠️ Please configure GOOGLE_API_KEY in Streamlit secrets")
+    st.info("For local development, set your API key in .streamlit/secrets.toml")
     st.stop()
 
 genai.configure(api_key=API_KEY)

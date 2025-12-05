@@ -1,5 +1,5 @@
-# Streamlit configuration
-.streamlit/
+# Streamlit configuration (contains secrets)
+.streamlit/secrets.toml
 __pycache__/
 *.pyc
 *.pyo
