@@ -95,27 +95,47 @@ def analyze_resume_general(resume_text):
     # Add rate limiting (prevent spam)
     time.sleep(1)
     
-    try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        prompt = f"""
-        Act as a Senior Career Coach and Resume Writer. 
-        Analyze the following resume text and provide a professional review.
-        
-        Resume Text:
-        {resume_text[:3000]}  # Limit input length to control costs
-        
-        Output the response in Markdown with these headers:
-        1. **🏆 Professional Summary**: Rate the summary section (if it exists) and suggest a stronger 2-sentence version.
-        2. **💪 Top Strengths**: identifying the top 3-5 distinct skills or experiences that stand out.
-        3. **🛑 Areas for Improvement**: Identify weak verbs, passive language, or formatting issues.
-        4. **✨ Recommended Roles**: Based on this resume, what are 3 job titles this candidate is best suited for?
-        """
-        response = model.generate_content(prompt)
-        increment_usage()  # Only count successful requests
-        return response.text
-    except Exception as e:
-        st.error(f"API Error: {str(e)}")
-        return None
+    # Use only the latest model
+    models_to_try = ['gemini-2.5-flash-lite']
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            prompt = f"""
+            Act as a Senior Career Coach and Resume Writer. 
+            Analyze the following resume text and provide a professional review.
+            
+            Resume Text:
+            {resume_text[:2500]}  # Reduced length to save tokens
+            
+            Output the response in Markdown with these headers:
+            1. **🏆 Professional Summary**: Rate the summary section (if it exists) and suggest a stronger 2-sentence version.
+            2. **💪 Top Strengths**: identifying the top 3-5 distinct skills or experiences that stand out.
+            3. **🛑 Areas for Improvement**: Identify weak verbs, passive language, or formatting issues.
+            4. **✨ Recommended Roles**: Based on this resume, what are 3 job titles this candidate is best suited for?
+            """
+            response = model.generate_content(prompt)
+            increment_usage()  # Only count successful requests
+            st.success(f"✅ Analysis completed using {model_name}")
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
+                continue
+            else:
+                st.error(f"❌ API Error with {model_name}: {error_msg}")
+                continue
+    
+    # If all models failed
+    st.error("🚫 All API models have exceeded quota limits. Please try:")
+    st.info("""
+    1. **Wait 24 hours** for quota reset
+    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
+    3. **Use a different API key** if available
+    4. **Try again later** when usage resets
+    """)
+    return None
 
 def analyze_resume_vs_jd(resume_text, jd_text):
     """Mode 2: Comparison with JD."""
@@ -126,27 +146,47 @@ def analyze_resume_vs_jd(resume_text, jd_text):
     # Add rate limiting (prevent spam)
     time.sleep(1)
     
-    try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        prompt = f"""
-        Act as an Application Tracking System (ATS) and Technical Recruiter.
-        Compare the Resume against the Job Description.
-        
-        Resume: {resume_text[:2000]}  # Limit input length
-        Job Description: {jd_text[:1000]}  # Limit input length
-        
-        Output in Markdown:
-        1. **🚫 Missing Critical Skills**: List technical skills/tools in the JD that are NOT in the resume.
-        2. **📉 Gap Analysis**: Briefly explain where the candidate's experience falls short of the requirements.
-        3. **✍️ Bullet Point Rewrite**: Pick one existing bullet point from the resume and rewrite it to specifically target this job description using keywords from the JD.
-        4. **⚖️ Final Verdict**: "High Match", "Medium Match", or "Low Match" with a 1-sentence reason.
-        """
-        response = model.generate_content(prompt)
-        increment_usage()  # Only count successful requests
-        return response.text
-    except Exception as e:
-        st.error(f"API Error: {str(e)}")
-        return None
+    # Use only the latest model
+    models_to_try = ['gemini-2.5-flash-lite']
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            prompt = f"""
+            Act as an Application Tracking System (ATS) and Technical Recruiter.
+            Compare the Resume against the Job Description.
+            
+            Resume: {resume_text[:1800]}  # Reduced token usage
+            Job Description: {jd_text[:800]}  # Reduced token usage
+            
+            Output in Markdown:
+            1. **🚫 Missing Critical Skills**: List technical skills/tools in the JD that are NOT in the resume.
+            2. **📉 Gap Analysis**: Briefly explain where the candidate's experience falls short of the requirements.
+            3. **✍️ Bullet Point Rewrite**: Pick one existing bullet point from the resume and rewrite it to specifically target this job description using keywords from the JD.
+            4. **⚖️ Final Verdict**: "High Match", "Medium Match", or "Low Match" with a 1-sentence reason.
+            """
+            response = model.generate_content(prompt)
+            increment_usage()  # Only count successful requests
+            st.success(f"✅ Analysis completed using {model_name}")
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
+                continue
+            else:
+                st.error(f"❌ API Error with {model_name}: {error_msg}")
+                continue
+    
+    # If all models failed
+    st.error("🚫 All API models have exceeded quota limits. Please try:")
+    st.info("""
+    1. **Wait 24 hours** for quota reset
+    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
+    3. **Use a different API key** if available
+    4. **Try again later** when usage resets
+    """)
+    return None
 
 # --- MAIN UI ---
 
@@ -163,14 +203,27 @@ with st.sidebar:
     st.divider()
     st.info("Uploaded files are processed in memory and not saved.")
     
-    # Usage statistics
-    st.subheader("📊 Usage Today")
-    if 'usage_count' in st.session_state:
-        remaining = MAX_DAILY_REQUESTS - st.session_state.usage_count
-        st.metric("Analyses Remaining", remaining)
-        st.progress(st.session_state.usage_count / MAX_DAILY_REQUESTS)
-    else:
-        st.metric("Analyses Remaining", MAX_DAILY_REQUESTS)
+    # Usage statistics and API status
+    st.subheader("📊 Usage Status")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if 'usage_count' in st.session_state:
+            remaining = MAX_DAILY_REQUESTS - st.session_state.usage_count
+            st.metric("Daily Analyses Remaining", remaining)
+            st.progress(st.session_state.usage_count / MAX_DAILY_REQUESTS)
+        else:
+            st.metric("Daily Analyses Remaining", MAX_DAILY_REQUESTS)
+    
+    with col2:
+        if 'hourly_count' in st.session_state:
+            hourly_remaining = MAX_HOURLY_REQUESTS - st.session_state.hourly_count
+            st.metric("Hourly Analyses Remaining", hourly_remaining)
+        else:
+            st.metric("Hourly Analyses Remaining", MAX_HOURLY_REQUESTS)
+    
+    # API Quota Information
+    st.info("💡 **如果遇到 API 配額錯誤**：這個應用會自動嘗試不同的 Gemini 模型。如果所有模型都超過配額，請等待 24 小時重置或考慮升級到付費方案。")
 
 # --- MODE 1: GENERAL REVIEW ---
 if mode == "📄 General Resume Review":
