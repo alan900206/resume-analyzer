@@ -475,9 +475,8 @@ if mode == "📄 General Resume Review":
                                 st.success("✅ **Analysis completed using manual text input**")
                                 st.markdown("### 📝 Resume Optimization Report")
                                 st.markdown(analysis)
-                return  # Exit early if PDF failed
-            
-            if resume_text:
+            else:
+                # PDF extraction successful
                 analysis = analyze_resume_general(resume_text, target_role)
                 if analysis:  # Only show results if analysis was successful
                     st.markdown("### 📝 Resume Optimization Report")
@@ -542,7 +541,8 @@ elif mode == "🎯 Compare with Job Description":
                                     st.markdown("### 🤖 AI Gap Analysis")
                                     st.markdown(ai_analysis)
                                     st.success("✅ **Analysis completed using manual text input**")
-                    return  # Exit early if PDF failed
+                else:
+                    # PDF extraction successful
                 
                 if resume_text:
                     # 1. Math Score (doesn't use API)
@@ -629,7 +629,8 @@ elif mode == "🔍 Detailed Skills Analysis":
                                         file_name=filename,
                                         mime="text/plain"
                                     )
-                return  # Exit early if PDF failed
+            else:
+                # PDF extraction successful
             
             if resume_text:
                 analysis = analyze_skills_detailed(resume_text)
