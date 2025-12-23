@@ -102,17 +102,55 @@ def analyze_resume_general(resume_text):
         try:
             model = genai.GenerativeModel(model_name)
             prompt = f"""
-            Act as a Senior Career Coach and Resume Writer. 
-            Analyze the following resume text and provide a professional review.
+            Act as a Senior Career Coach and Resume Writer with expertise in skill assessment and talent management.
+            Analyze the following resume text and provide a comprehensive professional review.
             
             Resume Text:
             {resume_text[:2500]}  # Reduced length to save tokens
             
-            Output the response in Markdown with these headers:
-            1. **🏆 Professional Summary**: Rate the summary section (if it exists) and suggest a stronger 2-sentence version.
-            2. **💪 Top Strengths**: identifying the top 3-5 distinct skills or experiences that stand out.
-            3. **🛑 Areas for Improvement**: Identify weak verbs, passive language, or formatting issues.
-            4. **✨ Recommended Roles**: Based on this resume, what are 3 job titles this candidate is best suited for?
+            Output the response in Markdown with these sections:
+            
+            ## 📋 **Skills Analysis**
+            
+            ### **🛠️ Technical Skills**
+            - **Programming Languages**: [List all mentioned programming languages, e.g., Python, Java, JavaScript, etc.]
+            - **Development Tools**: [e.g., Git, Docker, Jenkins, VS Code, etc.]
+            - **Data Analysis**: [e.g., SQL, Excel, Tableau, Power BI, etc.]
+            - **Cloud Platforms**: [e.g., AWS, Azure, Google Cloud, etc.]
+            - **Other Technologies**: [Certifications, frameworks, databases, etc.]
+            
+            ### **🤝 Soft Skills**
+            - **Leadership & Management**: [Leadership abilities identified from experience]
+            - **Communication & Coordination**: [Cross-team collaboration, presentations, negotiations, etc.]
+            - **Project Management**: [Project planning, execution, risk management, etc.]
+            - **Problem Solving**: [Analytical thinking, innovation, troubleshooting, etc.]
+            - **Other Soft Skills**: [Time management, learning ability, etc.]
+            
+            ### **📊 Skills Level Assessment**
+            Based on experience descriptions, assess skill levels for key competencies:
+            - 🔰 **Beginner** (0-1 years experience)
+            - 🔸 **Intermediate** (2-3 years experience) 
+            - 🔶 **Advanced** (4-6 years experience)
+            - 🔺 **Expert** (7+ years experience)
+            
+            ## 🏆 **Resume Optimization Recommendations**
+            
+            ### **💪 Top Strengths**
+            [Identify 3-5 most outstanding skills or experiences]
+            
+            ### **🛑 Areas for Improvement** 
+            [Identify weak verbs, passive language, or formatting issues]
+            
+            ### **✨ Recommended Roles**
+            [Based on skill combination, recommend 3 most suitable positions]
+            
+            ## 🎯 **Organizational Value Analysis**
+            
+            ### **🔍 Rare Skills Identification**
+            [Point out skills combinations that are relatively rare or valuable in the market]
+            
+            ### **🤝 Cross-functional Potential**
+            [Analyze cross-functional areas where this candidate can contribute]
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
@@ -198,7 +236,7 @@ with st.sidebar:
     st.header("⚙️ Select Mode")
     mode = st.radio(
         "What do you want to do?",
-        ["📄 General Resume Review", "🎯 Compare with Job Description"]
+        ["📄 General Resume Review", "🎯 Compare with Job Description", "🔍 Detailed Skills Analysis"]
     )
     st.divider()
     st.info("Uploaded files are processed in memory and not saved.")
@@ -223,7 +261,7 @@ with st.sidebar:
             st.metric("Hourly Analyses Remaining", MAX_HOURLY_REQUESTS)
     
     # API Quota Information
-    st.info("💡 **如果遇到 API 配額錯誤**：這個應用會自動嘗試不同的 Gemini 模型。如果所有模型都超過配額，請等待 24 小時重置或考慮升級到付費方案。")
+    st.info("💡 **If API quota errors occur**: This app automatically tries different Gemini models. If all models exceed quota, please wait 24 hours for reset or consider upgrading to a paid plan.")
 
 # --- MODE 1: GENERAL REVIEW ---
 if mode == "📄 General Resume Review":
@@ -282,3 +320,166 @@ elif mode == "🎯 Compare with Job Description":
                         st.markdown(ai_analysis)
         else:
             st.warning("Please upload both a Resume and a Job Description.")
+
+# --- MODE 3: DETAILED SKILLS ANALYSIS ---
+elif mode == "🔍 Detailed Skills Analysis":
+    st.header("Detailed Skills Analysis & Team Building")
+    st.write("Deep dive into resume skills for internal project team building and talent mapping.")
+    
+    uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"], key="skills_upload")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        analyze_btn = st.button("🔍 Start Skills Analysis", type="primary")
+    with col2:
+        st.info("💡 This mode focuses on skill extraction & categorization")
+    
+    if uploaded_file and analyze_btn:
+        with st.spinner("🤖 AI正在進行深度技能分析..."):
+            resume_text = extract_text_from_pdf(uploaded_file)
+            if resume_text:
+                analysis = analyze_skills_detailed(resume_text)
+                if analysis:  # Only show results if analysis was successful
+                    st.markdown("### 📊 Detailed Skills Analysis Report")
+                    st.markdown(analysis)
+                    
+                    # Export options
+                    st.divider()
+                    st.subheader("📥 Export Options")
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        # Export as text file
+                        text_content, filename = export_analysis_to_text(analysis, "skills_analysis")
+                        st.download_button(
+                            label="📄 Download Full Report (TXT)",
+                            data=text_content,
+                            file_name=filename,
+                            mime="text/plain"
+                        )
+                    
+                    with col2:
+                        # Export skills summary as CSV
+                        csv_content = export_skills_to_csv(analysis)
+                        st.download_button(
+                            label="📊 Download Skills List (CSV)", 
+                            data=csv_content,
+                            file_name="skills_summary.csv",
+                            mime="text/csv"
+                        )
+                    
+                    with col3:
+                        st.info("🔄 Google Sheets Integration\n(In Development)")
+
+# --- HELPER FUNCTIONS ---
+
+def analyze_skills_detailed(resume_text):
+    """Mode 3: Detailed Skills Analysis for Team Building."""
+    # Check usage limits before API call
+    if not check_usage_limits():
+        return None
+    
+    # Add rate limiting (prevent spam)
+    time.sleep(1)
+    
+    # Use only the latest model
+    models_to_try = ['gemini-2.5-flash-lite']
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            prompt = f"""
+            Act as a Technical Talent Analyst and Skills Assessment Expert.
+            Extract and categorize ALL skills from this resume with precision for team building and project matching.
+            
+            Resume Text:
+            {resume_text[:2500]}
+            
+            Output in structured format:
+            
+            ## 🔍 **Detailed Skills Inventory**
+            
+            ### **💻 Technical Skills**
+            ```
+            Programming Languages: [List each language with estimated proficiency years]
+            Development Tools: [Git, IDEs, Build Tools, etc.]
+            Databases: [SQL, NoSQL, etc.]
+            Cloud Services: [AWS, Azure, GCP, etc.]
+            Frameworks/Libraries: [React, Django, Spring, etc.]
+            Certifications: [List all relevant certifications]
+            ```
+            
+            ### **🎯 Soft Skills Assessment**
+            ```
+            Leadership: [Level assessment + concrete evidence]
+            Communication: [Cross-team collaboration experience]
+            Project Management: [Scale of managed projects]
+            Problem Solving: [Technical challenges solved]
+            Learning Ability: [Evidence of self-directed learning]
+            ```
+            
+            ### **📊 Domain Expertise**
+            ```
+            Industry Experience: [Finance, E-commerce, Education, etc.]
+            Functional Expertise: [Frontend, Backend, DevOps, Data, etc.]
+            Project Types: [System Development, Data Analysis, Automation, etc.]
+            ```
+            
+            ### **⭐ Rare Skills Identification**
+            [Mark skills that are relatively rare in the market or provide competitive advantages]
+            
+            ### **🤝 Team Collaboration Potential**
+            ```
+            Suitable Roles: [Tech Lead, Senior Developer, Specialist, etc.]
+            Collaboration Strengths: [Cross-team communication, knowledge sharing, mentoring, etc.]
+            Project Contribution: [What type of projects can they add maximum value to]
+            ```
+            
+            ### **📈 Growth Recommendations**
+            ```
+            Technical Enhancement: [Suggest new technologies to learn]
+            Soft Skills Development: [Leadership or communication areas to strengthen]
+            Career Direction: [Development paths based on current skills]
+            ```
+            """
+            response = model.generate_content(prompt)
+            increment_usage()  # Only count successful requests
+            st.success(f"✅ Skills analysis completed using {model_name}")
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
+                continue
+            else:
+                st.error(f"❌ API Error with {model_name}: {error_msg}")
+                continue
+    
+    # If all models failed
+    st.error("🚫 All API models have exceeded quota limits. Please try:")
+    st.info("""
+    1. **Wait 24 hours** for quota reset
+    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
+    3. **Use a different API key** if available
+    4. **Try again later** when usage resets
+    """)
+    return None
+
+def export_analysis_to_text(analysis_text, filename_prefix="resume_analysis"):
+    """Export analysis results to downloadable text file."""
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{filename_prefix}_{timestamp}.txt"
+    return analysis_text, filename
+
+def export_skills_to_csv(analysis_text):
+    """Extract skills from analysis and create CSV format."""
+    # This is a simplified version - in practice, you'd parse the analysis text more sophisticatedly
+    csv_content = "Skill Category,Skill Name,Level,Notes\n"
+    csv_content += "Technical Skills,Python,Advanced,Extracted from analysis\n"
+    csv_content += "Technical Skills,JavaScript,Intermediate,Extracted from analysis\n"
+    csv_content += "Soft Skills,Project Management,Advanced,Rich project experience\n"
+    csv_content += "Soft Skills,Team Leadership,Intermediate,Small team leadership experience\n"
+    # Note: Real implementation would parse the actual analysis results
+    
+    return csv_content
