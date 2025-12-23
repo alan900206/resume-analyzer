@@ -630,8 +630,6 @@ elif mode == "🔍 Detailed Skills Analysis":
                                     )
             else:
                 # PDF extraction successful
-            
-            if resume_text:
                 analysis = analyze_skills_detailed(resume_text)
                 if analysis:  # Only show results if analysis was successful
                     st.markdown("### 📊 Detailed Skills Analysis Report")
