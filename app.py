@@ -102,58 +102,52 @@ def analyze_resume_general(resume_text):
         try:
             model = genai.GenerativeModel(model_name)
             prompt = f"""
-            Act as a Senior Resume Writer and Career Strategist with expertise in ATS optimization and professional branding.
-            Provide comprehensive resume improvement recommendations focusing on format, content, and presentation.
+            Act as a Senior Resume Writer and Career Strategist. Provide concise, actionable resume improvement recommendations.
             
             Resume Text:
             {resume_text[:2500]}
             
-            Output in structured format:
+            Output in this EXACT format:
             
-            ## 🏆 **Overall Resume Assessment**
+            ## 🎯 **Resume Score & Quick Assessment**
             
-            ### **📊 Professional Summary & Branding**
-            - **Current Summary Evaluation**: [Rate the existing professional summary/objective]
-            - **Suggested Improvement**: [Write a compelling 2-3 sentence professional summary]
-            - **Personal Branding**: [How to better position this candidate's unique value]
+            **Overall Rating**: [Score out of 10] ⭐
+            **ATS Compatibility**: [High/Medium/Low] 🤖  
+            **Key Strength**: [One main strength in 5-7 words]
+            **Priority Fix**: [Most urgent issue to address]
             
-            ### **📝 Content Optimization**
-            - **Strong Points**: [3-4 most impressive achievements/experiences]
-            - **Weak Language Identified**: [Passive verbs, vague statements, overused words]
-            - **Action Verb Recommendations**: [Suggest 5-8 powerful action verbs for this industry]
-            - **Quantification Opportunities**: [Where numbers/metrics could strengthen impact]
+            ## 📝 **Top 3 Improvements (Priority Order)**
             
-            ## 🎯 **Structure & Formatting**
+            ### 🥇 **#1 Critical Fix**
+            **Issue**: [What's wrong]
+            **Solution**: [Specific action to take]
             
-            ### **📐 Layout & Organization**
-            - **Section Order**: [Recommended sequence of resume sections]
-            - **Formatting Issues**: [Spacing, fonts, bullet points, consistency problems]
-            - **Length Assessment**: [Too long/short, what to cut/add]
+            ### 🥈 **#2 High Impact** 
+            **Issue**: [What's wrong]
+            **Solution**: [Specific action to take]
             
-            ### **🔍 ATS Compatibility**
-            - **Keyword Optimization**: [Industry keywords missing from the resume]
-            - **Format Compliance**: [ATS-friendly formatting recommendations]
-            - **Section Headers**: [Standard vs creative headers for ATS scanning]
+            ### 🥉 **#3 Quick Win**
+            **Issue**: [What's wrong] 
+            **Solution**: [Specific action to take]
             
-            ## ✨ **Enhancement Recommendations**
+            ## 🚀 **Professional Summary Rewrite**
             
-            ### **💪 Content Additions**
-            - **Missing Sections**: [Skills, certifications, projects that should be added]
-            - **Achievement Enhancement**: [How to make accomplishments more impactful]
-            - **Industry Alignment**: [Adjustments for specific industry/role targets]
+            **Current**: [Brief assessment of existing summary]
+            **Improved Version**: 
+            [Write a compelling 2-sentence professional summary]
             
-            ### **🚫 What to Remove/Minimize**
-            - **Outdated Information**: [Old technologies, irrelevant experiences]
-            - **Space Wasters**: [Redundant content, obvious statements]
-            - **Red Flags**: [Employment gaps, job hopping concerns to address]
+            ## 📊 **Content Enhancement**
             
-            ## 📈 **Next Steps**
+            **Add These Keywords**: [5-6 industry keywords]
+            **Stronger Action Verbs**: [Replace weak verbs with these 4-5 powerful alternatives]
+            **Quantify These**: [2-3 achievements that need numbers/metrics]
             
-            ### **⚡ Quick Wins** (Can implement immediately)
-            [3-4 simple changes that will have immediate impact]
+            ## ⚡ **30-Second Fixes**
+            - [Quick formatting fix]
+            - [Simple word replacement]
+            - [Easy section adjustment]
             
-            ### **🔄 Long-term Improvements** (Career development)
-            [Strategic recommendations for building a stronger profile over time]
+            **Next Review Date**: [Recommend when to reassess]
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
@@ -451,7 +445,7 @@ elif mode == "🔍 Detailed Skills Analysis":
         st.info("💡 This mode focuses on skill extraction & categorization")
     
     if uploaded_file and analyze_btn:
-        with st.spinner("🤖 AI正在進行深度技能分析..."):
+        with st.spinner("🔍 AI is reviewing your profile..."):
             resume_text = extract_text_from_pdf(uploaded_file)
             if resume_text:
                 analysis = analyze_skills_detailed(resume_text)
