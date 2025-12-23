@@ -102,55 +102,58 @@ def analyze_resume_general(resume_text):
         try:
             model = genai.GenerativeModel(model_name)
             prompt = f"""
-            Act as a Senior Career Coach and Resume Writer with expertise in skill assessment and talent management.
-            Analyze the following resume text and provide a comprehensive professional review.
+            Act as a Senior Resume Writer and Career Strategist with expertise in ATS optimization and professional branding.
+            Provide comprehensive resume improvement recommendations focusing on format, content, and presentation.
             
             Resume Text:
-            {resume_text[:2500]}  # Reduced length to save tokens
+            {resume_text[:2500]}
             
-            Output the response in Markdown with these sections:
+            Output in structured format:
             
-            ## 📋 **Skills Analysis**
+            ## 🏆 **Overall Resume Assessment**
             
-            ### **🛠️ Technical Skills**
-            - **Programming Languages**: [List all mentioned programming languages, e.g., Python, Java, JavaScript, etc.]
-            - **Development Tools**: [e.g., Git, Docker, Jenkins, VS Code, etc.]
-            - **Data Analysis**: [e.g., SQL, Excel, Tableau, Power BI, etc.]
-            - **Cloud Platforms**: [e.g., AWS, Azure, Google Cloud, etc.]
-            - **Other Technologies**: [Certifications, frameworks, databases, etc.]
+            ### **📊 Professional Summary & Branding**
+            - **Current Summary Evaluation**: [Rate the existing professional summary/objective]
+            - **Suggested Improvement**: [Write a compelling 2-3 sentence professional summary]
+            - **Personal Branding**: [How to better position this candidate's unique value]
             
-            ### **🤝 Soft Skills**
-            - **Leadership & Management**: [Leadership abilities identified from experience]
-            - **Communication & Coordination**: [Cross-team collaboration, presentations, negotiations, etc.]
-            - **Project Management**: [Project planning, execution, risk management, etc.]
-            - **Problem Solving**: [Analytical thinking, innovation, troubleshooting, etc.]
-            - **Other Soft Skills**: [Time management, learning ability, etc.]
+            ### **📝 Content Optimization**
+            - **Strong Points**: [3-4 most impressive achievements/experiences]
+            - **Weak Language Identified**: [Passive verbs, vague statements, overused words]
+            - **Action Verb Recommendations**: [Suggest 5-8 powerful action verbs for this industry]
+            - **Quantification Opportunities**: [Where numbers/metrics could strengthen impact]
             
-            ### **📊 Skills Level Assessment**
-            Based on experience descriptions, assess skill levels for key competencies:
-            - 🔰 **Beginner** (0-1 years experience)
-            - 🔸 **Intermediate** (2-3 years experience) 
-            - 🔶 **Advanced** (4-6 years experience)
-            - 🔺 **Expert** (7+ years experience)
+            ## 🎯 **Structure & Formatting**
             
-            ## 🏆 **Resume Optimization Recommendations**
+            ### **📐 Layout & Organization**
+            - **Section Order**: [Recommended sequence of resume sections]
+            - **Formatting Issues**: [Spacing, fonts, bullet points, consistency problems]
+            - **Length Assessment**: [Too long/short, what to cut/add]
             
-            ### **💪 Top Strengths**
-            [Identify 3-5 most outstanding skills or experiences]
+            ### **🔍 ATS Compatibility**
+            - **Keyword Optimization**: [Industry keywords missing from the resume]
+            - **Format Compliance**: [ATS-friendly formatting recommendations]
+            - **Section Headers**: [Standard vs creative headers for ATS scanning]
             
-            ### **🛑 Areas for Improvement** 
-            [Identify weak verbs, passive language, or formatting issues]
+            ## ✨ **Enhancement Recommendations**
             
-            ### **✨ Recommended Roles**
-            [Based on skill combination, recommend 3 most suitable positions]
+            ### **💪 Content Additions**
+            - **Missing Sections**: [Skills, certifications, projects that should be added]
+            - **Achievement Enhancement**: [How to make accomplishments more impactful]
+            - **Industry Alignment**: [Adjustments for specific industry/role targets]
             
-            ## 🎯 **Organizational Value Analysis**
+            ### **🚫 What to Remove/Minimize**
+            - **Outdated Information**: [Old technologies, irrelevant experiences]
+            - **Space Wasters**: [Redundant content, obvious statements]
+            - **Red Flags**: [Employment gaps, job hopping concerns to address]
             
-            ### **🔍 Rare Skills Identification**
-            [Point out skills combinations that are relatively rare or valuable in the market]
+            ## 📈 **Next Steps**
             
-            ### **🤝 Cross-functional Potential**
-            [Analyze cross-functional areas where this candidate can contribute]
+            ### **⚡ Quick Wins** (Can implement immediately)
+            [3-4 simple changes that will have immediate impact]
+            
+            ### **🔄 Long-term Improvements** (Career development)
+            [Strategic recommendations for building a stronger profile over time]
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
@@ -378,8 +381,8 @@ with st.sidebar:
 
 # --- MODE 1: GENERAL REVIEW ---
 if mode == "📄 General Resume Review":
-    st.header("General Resume Health Check")
-    st.write("Upload your resume to get insights on your strengths, weaknesses, and suitable roles.")
+    st.header("Resume Optimization & ATS Enhancement")
+    st.write("Professional resume review focusing on format, content optimization, and ATS compatibility for job applications.")
     
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     
@@ -389,7 +392,7 @@ if mode == "📄 General Resume Review":
             if resume_text:
                 analysis = analyze_resume_general(resume_text)
                 if analysis:  # Only show results if analysis was successful
-                    st.markdown("### 📝 AI Analysis Report")
+                    st.markdown("### 📝 Resume Optimization Report")
                     st.markdown(analysis)
 
 # --- MODE 2: COMPARE WITH JD ---
