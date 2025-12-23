@@ -120,26 +120,32 @@ def analyze_resume_general(resume_text):
             
             ### 🥇 **#1 Critical Fix**
             **Issue**: [What's wrong]
+            
             **Solution**: [Specific action to take]
             
             ### 🥈 **#2 High Impact** 
             **Issue**: [What's wrong]
+            
             **Solution**: [Specific action to take]
             
             ### 🥉 **#3 Quick Win**
-            **Issue**: [What's wrong] 
+            **Issue**: [What's wrong]
+            
             **Solution**: [Specific action to take]
             
             ## 🚀 **Professional Summary Rewrite**
             
             **Current**: [Brief assessment of existing summary]
+            
             **Improved Version**: 
             [Write a compelling 2-sentence professional summary]
             
             ## 📊 **Content Enhancement**
             
             **Add These Keywords**: [5-6 industry keywords]
+            
             **Stronger Action Verbs**: [Replace weak verbs with these 4-5 powerful alternatives]
+            
             **Quantify These**: [2-3 achievements that need numbers/metrics]
             
             ## ⚡ **30-Second Fixes**
@@ -147,7 +153,9 @@ def analyze_resume_general(resume_text):
             - [Simple word replacement]
             - [Easy section adjustment]
             
-            **Next Review Date**: [Recommend when to reassess]
+            ## 📅 **Follow-up Recommendation**
+            **When to re-review this resume**: [Recommend timeline - e.g., "After applying these changes" or "In 2-3 months after gaining more experience"]
+            **Why**: [Brief reason for the timing]
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
