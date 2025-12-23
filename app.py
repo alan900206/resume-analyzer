@@ -67,15 +67,21 @@ st.set_page_config(page_title="AI Resume Expert", layout="wide", page_icon="👔
 # --- FUNCTIONS ---
 
 def extract_text_from_pdf(uploaded_file):
-    """Extracts text from PDF."""
+    """Extracts text from PDF with enhanced encoding support."""
     try:
         pdf_reader = PyPDF2.PdfReader(uploaded_file)
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            page_text = page.extract_text()
+            if page_text:  # Check if text extraction was successful
+                text += page_text + "\n"
+        
+        if not text.strip():
+            st.warning("⚠️ PDF文本提取為空，可能是掃描版PDF或包含圖像文字")
+            return None
         return text
     except Exception as e:
-        st.error(f"Error reading PDF: {e}")
+        st.error(f"PDF讀取錯誤: {e}")
         return None
 
 def calculate_match_score(resume_text, jd_text):
@@ -119,7 +125,9 @@ def analyze_resume_general(resume_text, target_role=None):
             **Professional Level**: [Entry/Mid/Senior - Based on experience depth and presentation quality] 📈"""
             
             prompt = f"""
-            Act as a Senior Resume Writer and Career Strategist. Provide concise, actionable resume improvement recommendations.
+            Act as a Senior Resume Writer and Career Strategist. Analyze the resume language and provide recommendations in the same language as the resume.
+            
+            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English. Match the user's language preference.
             
             Resume Text:
             {resume_text[:2500]}
@@ -232,6 +240,10 @@ def analyze_resume_vs_jd(resume_text, jd_text):
             model = genai.GenerativeModel(model_name)
             prompt = f"""
             Act as an Application Tracking System (ATS) and Technical Recruiter.
+            Analyze the resume and job description languages, then respond in the same language as the resume.
+            
+            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English.
+            
             Compare the Resume against the Job Description.
             
             Resume: {resume_text[:1800]}  # Reduced token usage
@@ -283,6 +295,10 @@ def analyze_skills_detailed(resume_text):
             model = genai.GenerativeModel(model_name)
             prompt = f"""
             Act as a Technical Talent Analyst and Skills Assessment Expert.
+            Analyze the resume language and provide detailed skills assessment in the same language.
+            
+            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English.
+            
             Extract and categorize ALL skills from this resume with precision for team building and project matching.
             
             Resume Text:
