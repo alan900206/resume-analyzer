@@ -117,8 +117,9 @@ def analyze_resume_general(resume_text, target_role=None):
             
             ## 🎯 **Resume Score & Quick Assessment**
             
-            **Overall Rating**: [Score out of 10] ⭐
-            **ATS Compatibility**: [High/Medium/Low] 🤖  
+            **Overall Rating**: [Score out of 10 - Be STRICT: Consider format (3pts) + content relevance to target role (4pts) + ATS optimization (3pts)] ⭐
+            **ATS Compatibility**: [High/Medium/Low - Consider keywords, format, sections for the target role] 🤖  
+            **Role-Resume Match**: [High/Medium/Low/Mismatch - How well does the background align with target role?] 🎯
             **Key Strength**: [One main strength in 5-7 words]
             **Priority Fix**: [Most urgent issue to address]
             
@@ -165,6 +166,12 @@ def analyze_resume_general(resume_text, target_role=None):
             - [Quick formatting fix]
             - [Simple word replacement]
             - [Easy section adjustment]
+            
+            SCORING GUIDELINES:
+            - If resume background completely mismatches target role: Overall Rating ≤ 4/10
+            - If some transferable skills but different field: Overall Rating 4-6/10  
+            - If relevant background with optimization needed: Overall Rating 6-8/10
+            - If strong match with minor improvements: Overall Rating 8-10/10
             {role_context}
             """
             response = model.generate_content(prompt)
