@@ -543,30 +543,29 @@ elif mode == "🎯 Compare with Job Description":
                                     st.success("✅ **Analysis completed using manual text input**")
                 else:
                     # PDF extraction successful
-                
-                if resume_text:
-                    # 1. Math Score (doesn't use API)
-                    match_score = calculate_match_score(resume_text, jd_input)
-                    
-                    # 2. AI Analysis (uses API)
-                    ai_analysis = analyze_resume_vs_jd(resume_text, jd_input)
-                    
-                    # Display Results
-                    st.divider()
-                    st.subheader("📊 Analysis Results")
-                    
-                    # Always show math score (free calculation)
-                    score_color = "red"
-                    if match_score > 75: score_color = "green"
-                    elif match_score > 50: score_color = "orange"
-                    
-                    st.markdown(f"### ATS Match Score: :{score_color}[{match_score}%]")
-                    st.progress(int(match_score))
-                    
-                    # Only show AI analysis if successful
-                    if ai_analysis:
-                        st.markdown("---")
-                        st.markdown(ai_analysis)
+                    if resume_text:
+                        # 1. Math Score (doesn't use API)
+                        match_score = calculate_match_score(resume_text, jd_input)
+                        
+                        # 2. AI Analysis (uses API)
+                        ai_analysis = analyze_resume_vs_jd(resume_text, jd_input)
+                        
+                        # Display Results
+                        st.divider()
+                        st.subheader("📊 Analysis Results")
+                        
+                        # Always show math score (free calculation)
+                        score_color = "red"
+                        if match_score > 75: score_color = "green"
+                        elif match_score > 50: score_color = "orange"
+                        
+                        st.markdown(f"### ATS Match Score: :{score_color}[{match_score}%]")
+                        st.progress(int(match_score))
+                        
+                        # Only show AI analysis if successful
+                        if ai_analysis:
+                            st.markdown("---")
+                            st.markdown(ai_analysis)
         else:
             if not uploaded_file:
                 st.error("⚠️ Please upload a PDF resume")
