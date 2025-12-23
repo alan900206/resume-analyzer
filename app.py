@@ -102,10 +102,21 @@ def analyze_resume_general(resume_text, target_role=None):
         try:
             model = genai.GenerativeModel(model_name)
             
-            # Prepare role-specific context
+            # Prepare role-specific context and scoring criteria
             role_context = ""
+            scoring_criteria = ""
+            
             if target_role and target_role.strip():
                 role_context = f"\n\nTARGET ROLE: {target_role.strip()}\nPlease provide recommendations specifically tailored for this role, including industry-specific keywords, relevant skills emphasis, and role-appropriate formatting suggestions."
+                scoring_criteria = """
+            **Overall Rating**: [Score out of 10 - Be STRICT: Consider format (3pts) + content relevance to target role (4pts) + ATS optimization (3pts)] ⭐
+            **ATS Compatibility**: [High/Medium/Low - Consider keywords, format, sections for the target role] 🤖  
+            **Role-Resume Match**: [High/Medium/Low/Mismatch - How well does the background align with target role?] 🎯"""
+            else:
+                scoring_criteria = """
+            **Overall Rating**: [Score out of 10 - Be STRICT: Consider format (3pts) + content quality (4pts) + ATS optimization (3pts)] ⭐
+            **ATS Compatibility**: [High/Medium/Low - Consider keywords, format, sections, readability] 🤖  
+            **Professional Level**: [Entry/Mid/Senior - Based on experience depth and presentation quality] 📈"""
             
             prompt = f"""
             Act as a Senior Resume Writer and Career Strategist. Provide concise, actionable resume improvement recommendations.
@@ -117,9 +128,7 @@ def analyze_resume_general(resume_text, target_role=None):
             
             ## 🎯 **Resume Score & Quick Assessment**
             
-            **Overall Rating**: [Score out of 10 - Be STRICT: Consider format (3pts) + content relevance to target role (4pts) + ATS optimization (3pts)] ⭐
-            **ATS Compatibility**: [High/Medium/Low - Consider keywords, format, sections for the target role] 🤖  
-            **Role-Resume Match**: [High/Medium/Low/Mismatch - How well does the background align with target role?] 🎯
+            {scoring_criteria}
             **Key Strength**: [One main strength in 5-7 words]
             **Priority Fix**: [Most urgent issue to address]
             
@@ -167,14 +176,23 @@ def analyze_resume_general(resume_text, target_role=None):
             - [Simple word replacement]
             - [Easy section adjustment]
             
-            SCORING GUIDELINES:
+            SCORING GUIDELINES:"""
+            
+            if target_role and target_role.strip():
+                scoring_guidelines = """
             - If resume background completely mismatches target role: Overall Rating ≤ 4/10
             - If some transferable skills but different field: Overall Rating 4-6/10  
             - If relevant background with optimization needed: Overall Rating 6-8/10
-            - If strong match with minor improvements: Overall Rating 8-10/10
-            {role_context}
-            """
-            response = model.generate_content(prompt)
+            - If strong match with minor improvements: Overall Rating 8-10/10"""
+            else:
+                scoring_guidelines = """
+            - Poor format, content quality, ATS issues: Overall Rating ≤ 4/10
+            - Basic format, adequate content, some ATS optimization needed: Overall Rating 4-6/10  
+            - Good format, solid content, minor ATS improvements: Overall Rating 6-8/10
+            - Excellent format, strong content, ATS optimized: Overall Rating 8-10/10"""
+            
+            final_prompt = prompt + scoring_guidelines + role_context
+            response = model.generate_content(final_prompt)
             increment_usage()  # Only count successful requests
             st.success(f"✅ Analysis completed using {model_name}")
             return response.text
