@@ -77,19 +77,7 @@ def extract_text_from_pdf(uploaded_file):
                 text += page_text + "\n"
         
         if not text.strip():
-            st.error("⚠️ **無法提取PDF文字！**")
-            st.warning("🚨 **這通常是因為:**")
-            st.markdown("""
-            - 🖼️ **掃描版PDF**: 履歷被掃描成圖像格式
-            - 📄 **圖片PDF**: 文字在圖片中，非文本格式
-            - 🔒 **加密文件**: PDF有密碼保護
-            
-            🛠️ **解決方案:**
-            1. ✅ **使用下方文字輸入框** - 手動複製貼上履歷內容
-            2. 📝 **重新建立**: 用Word或Google Docs重新製作可編輯的PDF
-            3. 🔍 **線上OCR**: 使用線上工具將圖片轉文字後輸入
-            """)
-            return None
+            return None  # 讓調用者處理錯誤顯示
         return text
     except Exception as e:
         st.error(f"PDF讀取錯誤: {e}")
@@ -457,23 +445,37 @@ if mode == "📄 General Resume Review":
     
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     
-    # 添加文本輸入替代選項
-    st.markdown("**或者，如果PDF無法讀取：**")
-    manual_text_input = st.text_area(
-        "📝 手動貼上履歷內容 (替代方案)", 
-        height=200,
-        placeholder="如果PDF是掃描版，請將履歷內容複製貼上到這裡...",
-        help="適用於掃描版PDF或圖片格式履歷"
-    )
-    
-    if (uploaded_file or manual_text_input.strip()) and st.button("Analyze Resume"):
+    if uploaded_file and st.button("Analyze Resume"):
         with st.spinner("🔍 AI is reviewing your profile..."):
-            # 優先使用手動輸入的文本，否則從PDF提取
-            if manual_text_input.strip():
-                resume_text = manual_text_input.strip()
-                st.success("✅ 使用手動輸入的履歷內容")
-            else:
-                resume_text = extract_text_from_pdf(uploaded_file)
+            resume_text = extract_text_from_pdf(uploaded_file)
+            
+            # 如果PDF提取失敗，顯示替代方案
+            if not resume_text:
+                st.error("🚨 **Cannot extract text from PDF!**")
+                with st.expander("🛠️ **Alternative Solution - Click to expand**", expanded=True):
+                    st.markdown("""
+                    **📄 This usually happens when:**
+                    - 🖼️ **Scanned PDF**: Resume was scanned as an image
+                    - 📷 **Image-based PDF**: Text is embedded in images, not as text
+                    - 🔒 **Password-protected**: PDF has security restrictions
+                    """)
+                    
+                    manual_text_input = st.text_area(
+                        "📝 **Paste your resume content here (Alternative)**",
+                        height=200,
+                        placeholder="Copy and paste your resume content here...",
+                        help="For scanned PDFs or image-based resumes",
+                        key="fallback_text_input"
+                    )
+                    
+                    if manual_text_input.strip() and st.button("Analyze with Text Input", type="primary"):
+                        with st.spinner("🔍 AI is analyzing your text..."):
+                            analysis = analyze_resume_general(manual_text_input.strip(), target_role)
+                            if analysis:
+                                st.success("✅ **Analysis completed using manual text input**")
+                                st.markdown("### 📝 Resume Optimization Report")
+                                st.markdown(analysis)
+                return  # Exit early if PDF failed
             
             if resume_text:
                 analysis = analyze_resume_general(resume_text, target_role)
@@ -489,24 +491,58 @@ elif mode == "🎯 Compare with Job Description":
     col1, col2 = st.columns(2)
     with col1:
         uploaded_file = st.file_uploader("1. Upload Resume (PDF)", type=["pdf"])
-        # 添加文字輸入替代選項
-        manual_text_input = st.text_area(
-            "📝 或手動輸入履歷內容", 
-            height=120,
-            placeholder="如果是掃描版PDF，請貼上履歷內容..."
-        )
     with col2:
         jd_input = st.text_area("2. Paste Job Description", height=150)
         
     if st.button("Compare Resume"):
-        if (uploaded_file or manual_text_input.strip()) and jd_input:
+        if uploaded_file and jd_input:
             with st.spinner("🤖 Calculating match score and finding gaps..."):
-                # 優先使用手動輸入的文本，否則從PDF提取
-                if manual_text_input.strip():
-                    resume_text = manual_text_input.strip()
-                    st.success("✅ 使用手動輸入的履歷內容")
-                else:
-                    resume_text = extract_text_from_pdf(uploaded_file)
+                resume_text = extract_text_from_pdf(uploaded_file)
+                
+                # 如果PDF提取失敗，顯示替代方案
+                if not resume_text:
+                    st.error("🚨 **Cannot extract text from PDF!**")
+                    with st.expander("🛠️ **Alternative Solution - Click to expand**", expanded=True):
+                        st.markdown("""
+                        **📄 This usually happens when:**
+                        - 🖼️ **Scanned PDF**: Resume was scanned as an image
+                        - 📷 **Image-based PDF**: Text is embedded in images
+                        - 🔒 **Password-protected**: PDF has security restrictions
+                        """)
+                        
+                        manual_text_input = st.text_area(
+                            "📝 **Paste your resume content here**",
+                            height=150,
+                            placeholder="Copy and paste your resume content here...",
+                            key="fallback_text_input_mode2"
+                        )
+                        
+                        if manual_text_input.strip() and st.button("Compare with Text Input", type="primary"):
+                            with st.spinner("🤖 Analyzing with manual input..."):
+                                # 1. Math Score
+                                match_score = calculate_match_score(manual_text_input.strip(), jd_input)
+                                
+                                # 2. AI Analysis
+                                ai_analysis = analyze_resume_vs_jd(manual_text_input.strip(), jd_input)
+                                
+                                # Display Results
+                                st.divider()
+                                st.subheader("📊 Analysis Results")
+                                
+                                # Math score
+                                score_color = "red"
+                                if match_score > 75: score_color = "green"
+                                elif match_score > 50: score_color = "orange"
+                                
+                                st.markdown(f"### ATS Match Score: :{score_color}[{match_score}%]")
+                                st.progress(int(match_score))
+                                
+                                # AI analysis
+                                if ai_analysis:
+                                    st.markdown("### 🤖 AI Gap Analysis")
+                                    st.markdown(ai_analysis)
+                                    st.success("✅ **Analysis completed using manual text input**")
+                    return  # Exit early if PDF failed
                 
                 if resume_text:
                     # 1. Math Score (doesn't use API)
@@ -532,10 +568,10 @@ elif mode == "🎯 Compare with Job Description":
                         st.markdown("---")
                         st.markdown(ai_analysis)
         else:
-            if not (uploaded_file or manual_text_input.strip()):
-                st.error("⚠️ 請上傳PDF或輸入履歷內容")
+            if not uploaded_file:
+                st.error("⚠️ Please upload a PDF resume")
             if not jd_input:
-                st.error("⚠️ 請輸入職位描述")
+                st.error("⚠️ Please enter a job description")
 
 # --- MODE 3: DETAILED SKILLS ANALYSIS ---
 elif mode == "🔍 Detailed Skills Analysis":
@@ -544,29 +580,58 @@ elif mode == "🔍 Detailed Skills Analysis":
     
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"], key="skills_upload")
     
-    # 添加文本輸入替代選項
-    st.markdown("**或者，如果PDF無法讀取：**")
-    manual_text_input_skills = st.text_area(
-        "📝 手動貼上履歷內容 (替代方案)", 
-        height=150,
-        placeholder="如果PDF是掃描版，請將履歷內容複製貼上到這裡...",
-        key="manual_skills_input"
-    )
-    
     col1, col2 = st.columns(2)
     with col1:
         analyze_btn = st.button("🔍 Start Skills Analysis", type="primary")
     with col2:
         st.info("💡 This mode focuses on skill extraction & categorization")
     
-    if (uploaded_file or manual_text_input_skills.strip()) and analyze_btn:
+    if uploaded_file and analyze_btn:
         with st.spinner("🔍 AI is reviewing your profile..."):
-            # 優先使用手動輸入的文本，否則從PDF提取
-            if manual_text_input_skills.strip():
-                resume_text = manual_text_input_skills.strip()
-                st.success("✅ 使用手動輸入的履歷內容")
-            else:
-                resume_text = extract_text_from_pdf(uploaded_file)
+            resume_text = extract_text_from_pdf(uploaded_file)
+            
+            # 如果PDF提取失敗，顯示替代方案
+            if not resume_text:
+                st.error("🚨 **Cannot extract text from PDF!**")
+                with st.expander("🛠️ **Alternative Solution - Click to expand**", expanded=True):
+                    st.markdown("""
+                    **📄 This usually happens when:**
+                    - 🖼️ **Scanned PDF**: Resume was scanned as an image
+                    - 📷 **Image-based PDF**: Text is embedded in images
+                    - 🔒 **Password-protected**: PDF has security restrictions
+                    """)
+                    
+                    manual_text_input_skills = st.text_area(
+                        "📝 **Paste your resume content here**",
+                        height=150,
+                        placeholder="Copy and paste your resume content here...",
+                        key="fallback_text_input_skills"
+                    )
+                    
+                    if manual_text_input_skills.strip() and st.button("Analyze Skills with Text Input", type="primary"):
+                        with st.spinner("🔍 AI is analyzing your skills..."):
+                            analysis = analyze_skills_detailed(manual_text_input_skills.strip())
+                            if analysis:
+                                st.success("✅ **Skills analysis completed using manual text input**")
+                                st.markdown("### 📊 Detailed Skills Analysis Report")
+                                st.markdown(analysis)
+                                
+                                # Export options
+                                st.divider()
+                                st.subheader("📥 Export Options")
+                                col1, col2, col3 = st.columns(3)
+                                
+                                with col1:
+                                    text_content, filename = export_analysis_to_text(analysis, "skills_analysis")
+                                    st.download_button(
+                                        label="📄 Download Full Report (TXT)",
+                                        data=text_content,
+                                        file_name=filename,
+                                        mime="text/plain"
+                                    )
+                return  # Exit early if PDF failed
+            
+            if resume_text:
             if resume_text:
                 analysis = analyze_skills_detailed(resume_text)
                 if analysis:  # Only show results if analysis was successful
