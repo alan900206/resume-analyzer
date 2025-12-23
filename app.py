@@ -124,9 +124,14 @@ def analyze_resume_general(resume_text, target_role=None):
             **Professional Level**: [Entry/Mid/Senior - Based on experience depth and presentation quality] 📈"""
             
             prompt = f"""
-            Act as a Senior Resume Writer and Career Strategist. Analyze the resume language and provide recommendations in the same language as the resume.
+            Act as a Senior Resume Writer and Career Strategist. Analyze the resume language and provide recommendations with cultural intelligence.
             
-            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English. Match the user's language preference.
+            LANGUAGE & CULTURAL INSTRUCTION: 
+            - If the resume is in Chinese (Traditional or Simplified), respond ENTIRELY in Traditional Chinese
+            - Use Chinese thinking patterns, workplace culture understanding, and local market insights
+            - Consider Taiwan/Hong Kong/Chinese job market standards and expectations
+            - Use appropriate Chinese business terminology and professional expressions
+            - If in English, respond in English with Western business standards
             
             Resume Text:
             {resume_text[:2500]}
@@ -198,7 +203,16 @@ def analyze_resume_general(resume_text, target_role=None):
             - Good format, solid content, minor ATS improvements: Overall Rating 6-8/10
             - Excellent format, strong content, ATS optimized: Overall Rating 8-10/10"""
             
-            final_prompt = prompt + scoring_guidelines + role_context
+            final_prompt = prompt + scoring_guidelines + role_context + """
+            
+            CULTURAL ADAPTATION FOR CHINESE RESUMES:
+            When analyzing Chinese resumes, consider:
+            - Traditional Chinese format preferences and professional presentation standards
+            - Local market keyword preferences and industry terminology
+            - Cultural nuances in self-presentation and achievement description
+            - Regional job market expectations and hiring practices
+            - Appropriate tone for Chinese professional communication
+            """
             response = model.generate_content(final_prompt)
             increment_usage()  # Only count successful requests
             st.success(f"✅ Analysis completed using {model_name}")
@@ -238,10 +252,14 @@ def analyze_resume_vs_jd(resume_text, jd_text):
         try:
             model = genai.GenerativeModel(model_name)
             prompt = f"""
-            Act as an Application Tracking System (ATS) and Technical Recruiter.
-            Analyze the resume and job description languages, then respond in the same language as the resume.
+            Act as an Application Tracking System (ATS) and Technical Recruiter with cultural intelligence.
+            Analyze both documents and respond with appropriate cultural and market context.
             
-            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English.
+            LANGUAGE & CULTURAL INSTRUCTION:
+            - If the resume is in Chinese (Traditional or Simplified), respond ENTIRELY in Traditional Chinese
+            - Consider local job market standards, hiring practices, and cultural expectations
+            - Use appropriate Chinese business terminology and recruitment language
+            - If in English, respond in English with Western business standards
             
             Compare the Resume against the Job Description.
             
@@ -253,6 +271,13 @@ def analyze_resume_vs_jd(resume_text, jd_text):
             2. **📉 Gap Analysis**: Briefly explain where the candidate's experience falls short of the requirements.
             3. **✍️ Bullet Point Rewrite**: Pick one existing bullet point from the resume and rewrite it to specifically target this job description using keywords from the JD.
             4. **⚖️ Final Verdict**: "High Match", "Medium Match", or "Low Match" with a 1-sentence reason.
+            
+            CULTURAL ADAPTATION FOR CHINESE CONTENT:
+            When working with Chinese resumes, adapt recommendations to:
+            - Local hiring manager expectations and evaluation criteria
+            - Regional industry standards and keyword preferences  
+            - Cultural communication styles and professional presentation norms
+            - Market-specific skill emphasis and terminology
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
@@ -293,10 +318,15 @@ def analyze_skills_detailed(resume_text):
         try:
             model = genai.GenerativeModel(model_name)
             prompt = f"""
-            Act as a Technical Talent Analyst and Skills Assessment Expert.
-            Analyze the resume language and provide detailed skills assessment in the same language.
+            Act as a Technical Talent Analyst and Skills Assessment Expert with cultural and market intelligence.
+            Provide skills analysis with appropriate cultural context and market understanding.
             
-            LANGUAGE INSTRUCTION: If the resume is in Chinese (Traditional or Simplified), respond entirely in Traditional Chinese. If in English, respond in English.
+            LANGUAGE & CULTURAL INSTRUCTION:
+            - If the resume is in Chinese (Traditional or Simplified), respond ENTIRELY in Traditional Chinese
+            - Consider local tech industry standards, skill naming conventions, and market demands
+            - Use appropriate Chinese technical terminology and career development language
+            - Understand regional differences in skill emphasis and career progression
+            - If in English, respond in English with Western industry standards
             
             Extract and categorize ALL skills from this resume with precision for team building and project matching.
             
@@ -349,6 +379,14 @@ def analyze_skills_detailed(resume_text):
             Soft Skills Development: [Leadership or communication areas to strengthen]
             Career Direction: [Development paths based on current skills]
             ```
+            
+            CULTURAL ADAPTATION FOR CHINESE CONTENT:
+            When analyzing Chinese resumes, consider:
+            - Local tech industry skill naming and categorization standards
+            - Regional career progression patterns and expectations
+            - Cultural context for skill presentation and team collaboration
+            - Market-specific technology trends and demands
+            - Appropriate Chinese technical and professional terminology
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
