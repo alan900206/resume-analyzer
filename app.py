@@ -226,6 +226,119 @@ def analyze_resume_vs_jd(resume_text, jd_text):
     """)
     return None
 
+def analyze_skills_detailed(resume_text):
+    """Mode 3: Detailed Skills Analysis for Team Building."""
+    # Check usage limits before API call
+    if not check_usage_limits():
+        return None
+    
+    # Add rate limiting (prevent spam)
+    time.sleep(1)
+    
+    # Use only the latest model
+    models_to_try = ['gemini-2.5-flash-lite']
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            prompt = f"""
+            Act as a Technical Talent Analyst and Skills Assessment Expert.
+            Extract and categorize ALL skills from this resume with precision for team building and project matching.
+            
+            Resume Text:
+            {resume_text[:2500]}
+            
+            Output in structured format:
+            
+            ## 🔍 **Detailed Skills Inventory**
+            
+            ### **💻 Technical Skills**
+            ```
+            Programming Languages: [List each language with estimated proficiency years]
+            Development Tools: [Git, IDEs, Build Tools, etc.]
+            Databases: [SQL, NoSQL, etc.]
+            Cloud Services: [AWS, Azure, GCP, etc.]
+            Frameworks/Libraries: [React, Django, Spring, etc.]
+            Certifications: [List all relevant certifications]
+            ```
+            
+            ### **🎯 Soft Skills Assessment**
+            ```
+            Leadership: [Level assessment + concrete evidence]
+            Communication: [Cross-team collaboration experience]
+            Project Management: [Scale of managed projects]
+            Problem Solving: [Technical challenges solved]
+            Learning Ability: [Evidence of self-directed learning]
+            ```
+            
+            ### **📊 Domain Expertise**
+            ```
+            Industry Experience: [Finance, E-commerce, Education, etc.]
+            Functional Expertise: [Frontend, Backend, DevOps, Data, etc.]
+            Project Types: [System Development, Data Analysis, Automation, etc.]
+            ```
+            
+            ### **⭐ Rare Skills Identification**
+            [Mark skills that are relatively rare in the market or provide competitive advantages]
+            
+            ### **🤝 Team Collaboration Potential**
+            ```
+            Suitable Roles: [Tech Lead, Senior Developer, Specialist, etc.]
+            Collaboration Strengths: [Cross-team communication, knowledge sharing, mentoring, etc.]
+            Project Contribution: [What type of projects can they add maximum value to]
+            ```
+            
+            ### **📈 Growth Recommendations**
+            ```
+            Technical Enhancement: [Suggest new technologies to learn]
+            Soft Skills Development: [Leadership or communication areas to strengthen]
+            Career Direction: [Development paths based on current skills]
+            ```
+            """
+            response = model.generate_content(prompt)
+            increment_usage()  # Only count successful requests
+            st.success(f"✅ Skills analysis completed using {model_name}")
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
+                continue
+            else:
+                st.error(f"❌ API Error with {model_name}: {error_msg}")
+                continue
+    
+    # If all models failed
+    st.error("🚫 All API models have exceeded quota limits. Please try:")
+    st.info("""
+    1. **Wait 24 hours** for quota reset
+    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
+    3. **Use a different API key** if available
+    4. **Try again later** when usage resets
+    """)
+    return None
+
+# --- EXPORT FUNCTIONS ---
+
+def export_analysis_to_text(analysis_text, filename_prefix="resume_analysis"):
+    """Export analysis results to downloadable text file."""
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"{filename_prefix}_{timestamp}.txt"
+    return analysis_text, filename
+
+def export_skills_to_csv(analysis_text):
+    """Extract skills from analysis and create CSV format."""
+    # This is a simplified version - in practice, you'd parse the analysis text more sophisticatedly
+    csv_content = "Skill Category,Skill Name,Level,Notes\n"
+    csv_content += "Technical Skills,Python,Advanced,Extracted from analysis\n"
+    csv_content += "Technical Skills,JavaScript,Intermediate,Extracted from analysis\n"
+    csv_content += "Soft Skills,Project Management,Advanced,Rich project experience\n"
+    csv_content += "Soft Skills,Team Leadership,Intermediate,Small team leadership experience\n"
+    # Note: Real implementation would parse the actual analysis results
+    
+    return csv_content
+
 # --- MAIN UI ---
 
 st.title("👔 AI Resume Architect")
@@ -370,116 +483,3 @@ elif mode == "🔍 Detailed Skills Analysis":
                     
                     with col3:
                         st.info("🔄 Google Sheets Integration\n(In Development)")
-
-# --- HELPER FUNCTIONS ---
-
-def analyze_skills_detailed(resume_text):
-    """Mode 3: Detailed Skills Analysis for Team Building."""
-    # Check usage limits before API call
-    if not check_usage_limits():
-        return None
-    
-    # Add rate limiting (prevent spam)
-    time.sleep(1)
-    
-    # Use only the latest model
-    models_to_try = ['gemini-2.5-flash-lite']
-    
-    for model_name in models_to_try:
-        try:
-            model = genai.GenerativeModel(model_name)
-            prompt = f"""
-            Act as a Technical Talent Analyst and Skills Assessment Expert.
-            Extract and categorize ALL skills from this resume with precision for team building and project matching.
-            
-            Resume Text:
-            {resume_text[:2500]}
-            
-            Output in structured format:
-            
-            ## 🔍 **Detailed Skills Inventory**
-            
-            ### **💻 Technical Skills**
-            ```
-            Programming Languages: [List each language with estimated proficiency years]
-            Development Tools: [Git, IDEs, Build Tools, etc.]
-            Databases: [SQL, NoSQL, etc.]
-            Cloud Services: [AWS, Azure, GCP, etc.]
-            Frameworks/Libraries: [React, Django, Spring, etc.]
-            Certifications: [List all relevant certifications]
-            ```
-            
-            ### **🎯 Soft Skills Assessment**
-            ```
-            Leadership: [Level assessment + concrete evidence]
-            Communication: [Cross-team collaboration experience]
-            Project Management: [Scale of managed projects]
-            Problem Solving: [Technical challenges solved]
-            Learning Ability: [Evidence of self-directed learning]
-            ```
-            
-            ### **📊 Domain Expertise**
-            ```
-            Industry Experience: [Finance, E-commerce, Education, etc.]
-            Functional Expertise: [Frontend, Backend, DevOps, Data, etc.]
-            Project Types: [System Development, Data Analysis, Automation, etc.]
-            ```
-            
-            ### **⭐ Rare Skills Identification**
-            [Mark skills that are relatively rare in the market or provide competitive advantages]
-            
-            ### **🤝 Team Collaboration Potential**
-            ```
-            Suitable Roles: [Tech Lead, Senior Developer, Specialist, etc.]
-            Collaboration Strengths: [Cross-team communication, knowledge sharing, mentoring, etc.]
-            Project Contribution: [What type of projects can they add maximum value to]
-            ```
-            
-            ### **📈 Growth Recommendations**
-            ```
-            Technical Enhancement: [Suggest new technologies to learn]
-            Soft Skills Development: [Leadership or communication areas to strengthen]
-            Career Direction: [Development paths based on current skills]
-            ```
-            """
-            response = model.generate_content(prompt)
-            increment_usage()  # Only count successful requests
-            st.success(f"✅ Skills analysis completed using {model_name}")
-            return response.text
-        except Exception as e:
-            error_msg = str(e)
-            if "429" in error_msg or "quota" in error_msg.lower():
-                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
-                continue
-            else:
-                st.error(f"❌ API Error with {model_name}: {error_msg}")
-                continue
-    
-    # If all models failed
-    st.error("🚫 All API models have exceeded quota limits. Please try:")
-    st.info("""
-    1. **Wait 24 hours** for quota reset
-    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
-    3. **Use a different API key** if available
-    4. **Try again later** when usage resets
-    """)
-    return None
-
-def export_analysis_to_text(analysis_text, filename_prefix="resume_analysis"):
-    """Export analysis results to downloadable text file."""
-    from datetime import datetime
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{filename_prefix}_{timestamp}.txt"
-    return analysis_text, filename
-
-def export_skills_to_csv(analysis_text):
-    """Extract skills from analysis and create CSV format."""
-    # This is a simplified version - in practice, you'd parse the analysis text more sophisticatedly
-    csv_content = "Skill Category,Skill Name,Level,Notes\n"
-    csv_content += "Technical Skills,Python,Advanced,Extracted from analysis\n"
-    csv_content += "Technical Skills,JavaScript,Intermediate,Extracted from analysis\n"
-    csv_content += "Soft Skills,Project Management,Advanced,Rich project experience\n"
-    csv_content += "Soft Skills,Team Leadership,Intermediate,Small team leadership experience\n"
-    # Note: Real implementation would parse the actual analysis results
-    
-    return csv_content
