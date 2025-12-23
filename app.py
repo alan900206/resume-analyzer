@@ -86,8 +86,8 @@ def calculate_match_score(resume_text, jd_text):
     match_percentage = cosine_similarity(count_matrix)[0][1] * 100
     return round(match_percentage, 2)
 
-def analyze_resume_general(resume_text):
-    """Mode 1: General Analysis without JD."""
+def analyze_resume_general(resume_text, target_role=None):
+    """Mode 1: General Analysis with optional target role."""
     # Check usage limits before API call
     if not check_usage_limits():
         return None
@@ -101,6 +101,12 @@ def analyze_resume_general(resume_text):
     for model_name in models_to_try:
         try:
             model = genai.GenerativeModel(model_name)
+            
+            # Prepare role-specific context
+            role_context = ""
+            if target_role and target_role.strip():
+                role_context = f"\n\nTARGET ROLE: {target_role.strip()}\nPlease provide recommendations specifically tailored for this role, including industry-specific keywords, relevant skills emphasis, and role-appropriate formatting suggestions."
+            
             prompt = f"""
             Act as a Senior Resume Writer and Career Strategist. Provide concise, actionable resume improvement recommendations.
             
@@ -159,6 +165,7 @@ def analyze_resume_general(resume_text):
             - [Quick formatting fix]
             - [Simple word replacement]
             - [Easy section adjustment]
+            {role_context}
             """
             response = model.generate_content(prompt)
             increment_usage()  # Only count successful requests
@@ -389,13 +396,20 @@ if mode == "📄 General Resume Review":
     st.header("Resume Optimization & ATS Enhancement")
     st.write("Professional resume review focusing on format, content optimization, and ATS compatibility for job applications.")
     
+    # Target role input
+    target_role = st.text_input(
+        "🎯 Target Role (Optional)", 
+        placeholder="e.g., Software Engineer, Product Manager, Data Scientist...",
+        help="Specify your target role for more personalized recommendations"
+    )
+    
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     
     if uploaded_file and st.button("Analyze Resume"):
         with st.spinner("🔍 AI is reviewing your profile..."):
             resume_text = extract_text_from_pdf(uploaded_file)
             if resume_text:
-                analysis = analyze_resume_general(resume_text)
+                analysis = analyze_resume_general(resume_text, target_role)
                 if analysis:  # Only show results if analysis was successful
                     st.markdown("### 📝 Resume Optimization Report")
                     st.markdown(analysis)
