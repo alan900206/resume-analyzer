@@ -17,6 +17,218 @@ except:
 
 genai.configure(api_key=API_KEY)
 
+# --- APPIER SOFT SKILLS FRAMEWORK ---
+APPIER_SOFT_SKILLS_FRAMEWORK = {
+    "Problem Solving & Critical thinking": [
+        "Problem Definition & Root Cause",
+        "Analytical & Logical Thinking", 
+        "Creative & Systems Thinking",
+        "Decision-Making & Execution",
+        "Adaptive & Collaborative Problem Solving"
+    ],
+    "Communication & Teamwork": [
+        "Active Listening & Empathy",
+        "Clear & Impactful Expression",
+        "Persuasive & Stakeholder Communication", 
+        "Feedback & Constructive Dialogue",
+        "Collaboration & Facilitation",
+        "Language Proficiency (Cross-Cultural Communication)"
+    ],
+    "AI Capability": [
+        "AI Literacy & Awareness",
+        "Applied AI & Data-Driven Problem Solving",
+        "Ethical & Responsible AI Practice"
+    ],
+    "Leadership": [
+        "Leading Self - Vision & Direction",
+        "Leading Self - Decision-Making Under Uncertainty", 
+        "Leading Self - Personal Resilience & Sustainable Performance",
+        "Leading Others - People Management & Coaching",
+        "Leading Others - Stakeholder Influence & Executive Communication",
+        "Leading Others - Change Leadership",
+        "Leading Business - Strategic Thinking & Prioritization"
+    ],
+    "Appier Leader": [
+        "Growth & Development",
+        "Timely Feedback",
+        "Respect & Professionalism",
+        "Integrity & Trust", 
+        "Genuine Care",
+        "Remove Obstacles",
+        "Focus & Priorities",
+        "Judgment & Expertise"
+    ],
+    "Appier Core Values": [
+        "Direct Communication",
+        "Open-Mindedness", 
+        "Ambition"
+    ]
+}
+
+# --- SKILL KEYWORDS MAPPING ---
+SKILL_KEYWORDS_MAPPING = {
+    "Problem Definition & Root Cause": [
+        "問題分析", "根本原因", "根因分析", "5 why", "issue identification", 
+        "problem solving", "root cause analysis", "troubleshooting", "問題定義",
+        "系統性分析", "問題診斷", "故障排除", "issue resolution"
+    ],
+    "Analytical & Logical Thinking": [
+        "邏輯思考", "分析能力", "analytical", "logical thinking", "data analysis",
+        "邏輯推理", "理性分析", "systematic analysis", "critical analysis",
+        "數據分析", "quantitative analysis", "邏輯判斷"
+    ],
+    "Creative & Systems Thinking": [
+        "創新思維", "系統思考", "creative", "innovation", "systems thinking",
+        "創意", "設計思考", "design thinking", "holistic approach",
+        "整體思維", "創造力", "breakthrough thinking", "out of box"
+    ],
+    "Decision-Making & Execution": [
+        "決策", "執行力", "decision making", "execution", "implementation",
+        "落地執行", "推動執行", "決策能力", "執行能力", "deliver results",
+        "project execution", "follow through", "成果交付"
+    ],
+    "Adaptive & Collaborative Problem Solving": [
+        "適應性", "協作", "collaboration", "adaptability", "flexible",
+        "團隊合作", "跨部門", "cross-functional", "agile", "敏捷",
+        "彈性", "變通", "teamwork", "partnership"
+    ],
+    "Active Listening & Empathy": [
+        "傾聽", "同理心", "empathy", "active listening", "understanding",
+        "換位思考", "情感智慧", "emotional intelligence", "compassion",
+        "理解他人", "關懷", "empathetic", "人文關懷"
+    ],
+    "Clear & Impactful Expression": [
+        "表達能力", "簡報", "presentation", "communication", "articulation",
+        "清晰表達", "影響力", "說服力", "演講", "public speaking",
+        "溝通技巧", "表達技巧", "clear communication"
+    ],
+    "Persuasive & Stakeholder Communication": [
+        "說服", "利害關係人", "stakeholder", "persuasion", "influence",
+        "談判", "negotiation", "stakeholder management", "關係建立",
+        "影響力溝通", "external communication", "客戶溝通"
+    ],
+    "Feedback & Constructive Dialogue": [
+        "回饋", "建設性對話", "feedback", "constructive", "dialogue",
+        "意見交流", "討論", "建議", "改善建議", "coaching",
+        "指導", "mentor", "輔導", "建設性溝通"
+    ],
+    "Collaboration & Facilitation": [
+        "協作", "促進", "facilitation", "collaboration", "teamwork",
+        "團隊協作", "跨部門合作", "cross-team", "workshop", "會議主持",
+        "團隊建設", "consensus building", "協調"
+    ],
+    "Language Proficiency (Cross-Cultural Communication)": [
+        "多語言", "跨文化", "cross-cultural", "international", "global",
+        "英文", "中文", "bilingual", "multicultural", "cultural awareness",
+        "國際化", "文化敏感度", "語言能力"
+    ],
+    "AI Literacy & Awareness": [
+        "AI", "人工智慧", "machine learning", "AI工具", "ChatGPT", "GPT",
+        "AI素養", "AI認知", "artificial intelligence", "ML", "deep learning",
+        "AI應用", "AI趨勢", "AI awareness", "AI literacy"
+    ],
+    "Applied AI & Data-Driven Problem Solving": [
+        "數據驅動", "data-driven", "AI應用", "applied AI", "data analysis",
+        "數據分析", "AI解決方案", "AI implementation", "automation",
+        "自動化", "數據科學", "data science", "AI工具應用"
+    ],
+    "Ethical & Responsible AI Practice": [
+        "AI倫理", "負責任AI", "ethical AI", "responsible AI", "AI ethics",
+        "AI風險", "AI安全", "AI governance", "bias", "偏見",
+        "公平性", "透明度", "AI責任", "ethical technology"
+    ],
+    "Leading Self - Vision & Direction": [
+        "願景", "方向", "vision", "direction", "goal setting", "目標設定",
+        "自我領導", "個人願景", "strategic vision", "long-term thinking",
+        "未來規劃", "方向感", "purpose", "使命感"
+    ],
+    "Leading Self - Decision-Making Under Uncertainty": [
+        "不確定性", "uncertainty", "ambiguity", "風險決策", "risk management",
+        "模糊情況", "快速決策", "判斷力", "decisiveness", "ambiguous situation",
+        "不確定環境", "風險評估", "risk assessment"
+    ],
+    "Leading Self - Personal Resilience & Sustainable Performance": [
+        "韌性", "resilience", "可持續性", "sustainable", "抗壓性",
+        "壓力管理", "stress management", "持久力", "endurance", "recovery",
+        "自我調節", "work-life balance", "身心健康", "mental health"
+    ],
+    "Leading Others - People Management & Coaching": [
+        "人才管理", "coaching", "輔導", "mentor", "team management",
+        "人員發展", "talent development", "績效管理", "performance management",
+        "團隊領導", "team leadership", "培養人才", "人才培育"
+    ],
+    "Leading Others - Stakeholder Influence & Executive Communication": [
+        "高層溝通", "executive communication", "影響力", "influence", "stakeholder",
+        "利害關係人", "高階主管", "senior management", "board communication",
+        "策略溝通", "strategic communication", "executive presence"
+    ],
+    "Leading Others - Change Leadership": [
+        "變革領導", "change leadership", "change management", "transformation",
+        "組織變革", "變革管理", "轉型", "digital transformation",
+        "文化變革", "cultural change", "innovation leadership"
+    ],
+    "Leading Business - Strategic Thinking & Prioritization": [
+        "策略思維", "strategic thinking", "優先順序", "prioritization", "strategy",
+        "商業策略", "business strategy", "策略規劃", "strategic planning",
+        "資源配置", "resource allocation", "策略執行"
+    ],
+    "Growth & Development": [
+        "成長", "發展", "growth", "development", "learning", "學習",
+        "進步", "improvement", "skill development", "continuous learning",
+        "自我提升", "personal development", "professional growth"
+    ],
+    "Timely Feedback": [
+        "及時回饋", "timely feedback", "即時反饋", "real-time feedback",
+        "適時指導", "及時溝通", "prompt response", "timely communication",
+        "即時回應", "快速反饋", "responsive feedback"
+    ],
+    "Respect & Professionalism": [
+        "尊重", "專業", "respect", "professionalism", "professional conduct",
+        "職業操守", "專業態度", "professional behavior", "courtesy",
+        "禮貌", "職業素養", "professional ethics", "mutual respect"
+    ],
+    "Integrity & Trust": [
+        "誠信", "信任", "integrity", "trust", "honesty", "trustworthy",
+        "可信賴", "誠實", "ethical", "moral", "正直", "品德",
+        "職業道德", "professional ethics", "reliability"
+    ],
+    "Genuine Care": [
+        "真心關懷", "genuine care", "caring", "compassion", "empathy",
+        "關心", "人文關懷", "人性化", "温暖", "支持", "support",
+        "關愛", "體貼", "considerate", "thoughtful"
+    ],
+    "Remove Obstacles": [
+        "排除障礙", "remove obstacles", "problem solving", "barrier removal",
+        "清除阻礙", "解決阻礙", "obstacle management", "roadblock removal",
+        "困難排除", "解決困難", "enable others", "facilitate progress"
+    ],
+    "Focus & Priorities": [
+        "專注", "優先順序", "focus", "priorities", "concentration",
+        "重點", "核心", "key focus", "strategic focus", "priority management",
+        "時間管理", "attention management", "goal-oriented"
+    ],
+    "Judgment & Expertise": [
+        "判斷力", "專業知識", "judgment", "expertise", "professional knowledge",
+        "專業能力", "經驗", "experience", "wisdom", "insight",
+        "深度思考", "專業判斷", "expert knowledge", "domain expertise"
+    ],
+    "Direct Communication": [
+        "直接溝通", "direct communication", "straightforward", "transparent",
+        "坦誠", "直率", "明確", "清楚", "不繞彎", "直截了當",
+        "開誠布公", "honest communication", "clear and direct"
+    ],
+    "Open-Mindedness": [
+        "開放心態", "open-minded", "開放性", "receptive", "flexible thinking",
+        "包容", "接納", "多元思維", "diverse perspectives", "learning mindset",
+        "成長心態", "growth mindset", "curiosity", "好奇心"
+    ],
+    "Ambition": [
+        "企圖心", "ambition", "ambitious", "drive", "motivation",
+        "積極進取", "上進心", "目標導向", "goal-oriented", "aspiration",
+        "追求卓越", "excellence", "高標準", "high standards", "achievement"
+    ]
+}
+
 # --- API USAGE CONTROL ---
 # Daily usage limits (adjust these numbers as needed)
 MAX_DAILY_REQUESTS = 50  # 每日最多分析次數
@@ -302,6 +514,170 @@ def analyze_resume_vs_jd(resume_text, jd_text):
     """)
     return None
 
+def analyze_appier_soft_skills(resume_text):
+    """Mode 3: Appier Soft Skills Analysis - focused on 6 categories with 32 specific skills."""
+    # Check usage limits before API call
+    if not check_usage_limits():
+        return None
+    
+    # Add rate limiting (prevent spam)
+    time.sleep(1)
+    
+    # Use only the latest model
+    models_to_try = ['gemini-2.5-flash-lite']
+    
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            
+            # Generate skill categories and lists for prompt
+            skills_overview = ""
+            for category, skills in APPIER_SOFT_SKILLS_FRAMEWORK.items():
+                skills_overview += f"\n**{category}** ({len(skills)} skills):\n"
+                for i, skill in enumerate(skills, 1):
+                    skills_overview += f"   {i}. {skill}\n"
+            
+            prompt = f"""
+            你是一位專業的人才評估專家，專門分析Appier公司的軟實力框架。請根據以下32項軟實力技能分析履歷內容。
+
+            **Appier軟實力框架 (6大類別，32項技能):**
+            {skills_overview}
+
+            **評分標準:**
+            - 使用1-10分制評分
+            - 1-3分：無明顯證據或相關經驗
+            - 4-6分：有基本相關經驗或潛力
+            - 7-8分：有明確證據和具體經驗
+            - 9-10分：有豐富經驗和卓越表現
+
+            **履歷內容:**
+            {resume_text[:3000]}
+
+            **請按以下格式輸出分析結果:**
+
+            ## 🎯 **Appier軟實力總評**
+
+            **整體軟實力得分**: [總平均分數/10] 分
+            **最強技能類別**: [得分最高的類別]
+            **發展潛力**: [綜合評估：高/中/低]
+            **Appier文化契合度**: [1-10分及簡要說明]
+
+            ## 📊 **六大類別詳細分析**
+
+            ### 🧠 **Problem Solving & Critical thinking** (平均分數: X.X/10)
+            **識別到的技能:**
+            - Problem Definition & Root Cause: [分數]/10 - [具體證據或"無明顯證據"]
+            - Analytical & Logical Thinking: [分數]/10 - [具體證據或"無明顯證據"]  
+            - Creative & Systems Thinking: [分數]/10 - [具體證據或"無明顯證據"]
+            - Decision-Making & Execution: [分數]/10 - [具體證據或"無明顯證據"]
+            - Adaptive & Collaborative Problem Solving: [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ### 💬 **Communication & Teamwork** (平均分數: X.X/10)
+            **識別到的技能:**
+            - Active Listening & Empathy: [分數]/10 - [具體證據或"無明顯證據"]
+            - Clear & Impactful Expression: [分數]/10 - [具體證據或"無明顯證據"]
+            - Persuasive & Stakeholder Communication: [分數]/10 - [具體證據或"無明顯證據"]
+            - Feedback & Constructive Dialogue: [分數]/10 - [具體證據或"無明顯證據"]
+            - Collaboration & Facilitation: [分數]/10 - [具體證據或"無明顯證據"]
+            - Language Proficiency (Cross-Cultural Communication): [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ### 🤖 **AI Capability** (平均分數: X.X/10)
+            **識別到的技能:**
+            - AI Literacy & Awareness: [分數]/10 - [具體證據或"無明顯證據"]
+            - Applied AI & Data-Driven Problem Solving: [分數]/10 - [具體證據或"無明顯證據"]
+            - Ethical & Responsible AI Practice: [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ### 👑 **Leadership** (平均分數: X.X/10)
+            **識別到的技能:**
+            - Leading Self - Vision & Direction: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Self - Decision-Making Under Uncertainty: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Self - Personal Resilience & Sustainable Performance: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Others - People Management & Coaching: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Others - Stakeholder Influence & Executive Communication: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Others - Change Leadership: [分數]/10 - [具體證據或"無明顯證據"]
+            - Leading Business - Strategic Thinking & Prioritization: [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ### 🌟 **Appier Leader** (平均分數: X.X/10)
+            **識別到的技能:**
+            - Growth & Development: [分數]/10 - [具體證據或"無明顯證據"]
+            - Timely Feedback: [分數]/10 - [具體證據或"無明顯證據"]
+            - Respect & Professionalism: [分數]/10 - [具體證據或"無明顯證據"]
+            - Integrity & Trust: [分數]/10 - [具體證據或"無明顯證據"]
+            - Genuine Care: [分數]/10 - [具體證據或"無明顯證據"]
+            - Remove Obstacles: [分數]/10 - [具體證據或"無明顯證據"]
+            - Focus & Priorities: [分數]/10 - [具體證據或"無明顯證據"]
+            - Judgment & Expertise: [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ### 💎 **Appier Core Values** (平均分數: X.X/10)
+            **識別到的技能:**
+            - Direct Communication: [分數]/10 - [具體證據或"無明顯證據"]
+            - Open-Mindedness: [分數]/10 - [具體證據或"無明顯證據"]
+            - Ambition: [分數]/10 - [具體證據或"無明顯證據"]
+
+            **類別總評**: [整體表現描述]
+            **發展建議**: [針對性改善建議]
+
+            ## 🚀 **個人發展建議**
+
+            **立即可改善項目** (3個最需要的技能):
+            1. [技能名稱] - [具體改善建議]
+            2. [技能名稱] - [具體改善建議]  
+            3. [技能名稱] - [具體改善建議]
+
+            **中長期發展方向**:
+            - [發展領域1]: [具體建議]
+            - [發展領域2]: [具體建議]
+
+            **Appier文化融入建議**:
+            [針對Appier文化特色的具體建議]
+
+            ## 📈 **團隊配置建議**
+
+            **最適合的團隊角色**: [基於分析結果的建議]
+            **可貢獻的價值**: [在團隊中能發揮的優勢]
+            **需要的支持**: [團隊或組織應提供的協助]
+
+            **注意**: 證據不足的技能並非代表不具備，可能是履歷呈現方式需要改善，或需要透過其他方式(面談、作品集等)進一步評估。
+            """
+            
+            response = model.generate_content(prompt)
+            increment_usage()  # Only count successful requests
+            st.success(f"✅ Appier軟實力分析完成 (使用 {model_name})")
+            return response.text
+        except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                st.warning(f"⚠️ {model_name} quota exceeded, trying next model...")
+                continue
+            else:
+                st.error(f"❌ API Error with {model_name}: {error_msg}")
+                continue
+    
+    # If all models failed
+    st.error("🚫 All API models have exceeded quota limits. Please try:")
+    st.info("""
+    1. **Wait 24 hours** for quota reset
+    2. **Upgrade to paid plan** at https://ai.google.dev/pricing
+    3. **Use a different API key** if available
+    4. **Try again later** when usage resets
+    """)
+    return None
+
 def analyze_skills_detailed(resume_text):
     """Mode 3: Detailed Skills Analysis for Team Building."""
     # Check usage limits before API call
@@ -442,7 +818,7 @@ with st.sidebar:
     st.header("⚙️ Select Mode")
     mode = st.radio(
         "What do you want to do?",
-        ["📄 General Resume Review", "🎯 Compare with Job Description", "🔍 Detailed Skills Analysis"]
+        ["📄 General Resume Review", "🎯 Compare with Job Description", "🌟 Appier Soft Skills Analysis", "🔍 Detailed Skills Analysis"]
     )
     st.divider()
     st.info("Uploaded files are processed in memory and not saved.")
@@ -610,7 +986,98 @@ elif mode == "🎯 Compare with Job Description":
             if not jd_input:
                 st.error("⚠️ Please enter a job description")
 
-# --- MODE 3: DETAILED SKILLS ANALYSIS ---
+# --- MODE 3: APPIER SOFT SKILLS ANALYSIS ---
+elif mode == "🌟 Appier Soft Skills Analysis":
+    st.header("Appier軟實力分析")
+    st.write("針對Appier公司軟實力框架進行詳細分析，包含6大類別32項具體技能的評估。")
+    
+    # Display framework overview
+    with st.expander("📋 查看 Appier 軟實力框架 (6大類別, 32項技能)", expanded=False):
+        for category, skills in APPIER_SOFT_SKILLS_FRAMEWORK.items():
+            st.markdown(f"**{category}** ({len(skills)} 項技能):")
+            for i, skill in enumerate(skills, 1):
+                st.markdown(f"   {i}. {skill}")
+            st.markdown("")
+    
+    uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"], key="appier_skills_upload")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        analyze_btn = st.button("🌟 開始軟實力分析", type="primary")
+    with col2:
+        st.info("💡 基於1-10分制評估32項軟實力技能")
+    
+    if uploaded_file and analyze_btn:
+        with st.spinner("🔍 AI正在分析您的軟實力..."):
+            resume_text = extract_text_from_pdf(uploaded_file)
+            
+            # 如果PDF提取失敗，顯示替代方案
+            if not resume_text:
+                st.error("🚨 **無法從PDF提取文字!**")
+                with st.expander("🛠️ **替代方案 - 點擊展開**", expanded=True):
+                    st.markdown("""
+                    **📄 這種情況通常發生在:**
+                    - 🖼️ **掃描的PDF**: 履歷是作為圖像掃描的
+                    - 📷 **圖像化PDF**: 文字嵌入在圖像中，而不是文字
+                    - 🔒 **密碼保護**: PDF有安全限制
+                    """)
+                    
+                    manual_text_input_appier = st.text_area(
+                        "📝 **在此貼上您的履歷內容**",
+                        height=150,
+                        placeholder="請複製並貼上您的履歷內容...",
+                        key="fallback_text_input_appier"
+                    )
+                    
+                    if manual_text_input_appier.strip() and st.button("用文字輸入分析軟實力", type="primary"):
+                        with st.spinner("🔍 AI正在分析您的軟實力..."):
+                            analysis = analyze_appier_soft_skills(manual_text_input_appier.strip())
+                            if analysis:
+                                st.success("✅ **使用手動文字輸入完成軟實力分析**")
+                                st.markdown("### 🌟 Appier軟實力分析報告")
+                                st.markdown(analysis)
+                                
+                                # Export options
+                                st.divider()
+                                st.subheader("📥 匯出選項")
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    text_content, filename = export_analysis_to_text(analysis, "appier_soft_skills_analysis")
+                                    st.download_button(
+                                        label="📄 下載完整報告 (TXT)",
+                                        data=text_content,
+                                        file_name=filename,
+                                        mime="text/plain"
+                                    )
+                                with col2:
+                                    st.info("🔄 JSON格式匯出\n(開發中)")
+            else:
+                # PDF extraction successful
+                analysis = analyze_appier_soft_skills(resume_text)
+                if analysis:  # Only show results if analysis was successful
+                    st.markdown("### 🌟 Appier軟實力分析報告")
+                    st.markdown(analysis)
+                    
+                    # Export options
+                    st.divider()
+                    st.subheader("📥 匯出選項")
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        # Export as text file
+                        text_content, filename = export_analysis_to_text(analysis, "appier_soft_skills_analysis")
+                        st.download_button(
+                            label="📄 下載完整報告 (TXT)",
+                            data=text_content,
+                            file_name=filename,
+                            mime="text/plain"
+                        )
+                    
+                    with col2:
+                        st.info("🔄 JSON格式匯出\n(開發中)")
+
+# --- MODE 4: DETAILED SKILLS ANALYSIS ---
 elif mode == "🔍 Detailed Skills Analysis":
     st.header("Detailed Skills Analysis & Team Building")
     st.write("Deep dive into resume skills for internal project team building and talent mapping.")
