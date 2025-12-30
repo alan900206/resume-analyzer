@@ -818,7 +818,7 @@ with st.sidebar:
     st.header("⚙️ Select Mode")
     mode = st.radio(
         "What do you want to do?",
-        ["📄 General Resume Review", "🎯 Compare with Job Description", "🌟 Appier Soft Skills Analysis", "🔍 Detailed Skills Analysis"]
+        ["📄 General Resume Review", "🎯 Compare with Job Description"]
     )
     st.divider()
     st.info("Uploaded files are processed in memory and not saved.")
@@ -847,8 +847,8 @@ with st.sidebar:
 
 # --- MODE 1: GENERAL REVIEW ---
 if mode == "📄 General Resume Review":
-    st.header("Resume Optimization & ATS Enhancement")
-    st.write("Professional resume review focusing on format, content optimization, and ATS compatibility for job applications.")
+    st.header("Resume Analysis & Enhancement")
+    st.write("Upload your resume and choose the type of analysis that best fits your needs.")
     
     # Target role input
     target_role = st.text_input(
@@ -859,42 +859,136 @@ if mode == "📄 General Resume Review":
     
     uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
     
-    if uploaded_file and st.button("Analyze Resume"):
-        with st.spinner("🔍 AI is reviewing your profile..."):
-            resume_text = extract_text_from_pdf(uploaded_file)
+    if uploaded_file:
+        # Display Appier framework overview for Appier analysis option
+        with st.expander("📋 查看 Appier 軟實力框架 (6大類別, 32項技能)", expanded=False):
+            for category, skills in APPIER_SOFT_SKILLS_FRAMEWORK.items():
+                st.markdown(f"**{category}** ({len(skills)} 項技能):")
+                for i, skill in enumerate(skills, 1):
+                    st.markdown(f"   {i}. {skill}")
+                st.markdown("")
+        
+        st.divider()
+        st.subheader("Choose Analysis Type:")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            general_btn = st.button("📄 一般履歷優化", 
+                                   type="primary",
+                                   help="適合求職、轉職，專注ATS優化和履歷格式建議",
+                                   use_container_width=True)
+        with col2:
+            appier_btn = st.button("🌟 Appier軟實力分析", 
+                                  type="secondary",
+                                  help="適合Appier員工，專注軟實力評估和職涯發展建議",
+                                  use_container_width=True)
+        
+        # Initialize session state for analysis choice
+        if 'analysis_choice' not in st.session_state:
+            st.session_state.analysis_choice = None
+        if 'analysis_result' not in st.session_state:
+            st.session_state.analysis_result = None
             
-            # 如果PDF提取失敗，顯示替代方案
-            if not resume_text:
-                st.error("🚨 **Cannot extract text from PDF!**")
-                with st.expander("🛠️ **Alternative Solution - Click to expand**", expanded=True):
-                    st.markdown("""
-                    **📄 This usually happens when:**
-                    - 🖼️ **Scanned PDF**: Resume was scanned as an image
-                    - 📷 **Image-based PDF**: Text is embedded in images, not as text
-                    - 🔒 **Password-protected**: PDF has security restrictions
-                    """)
-                    
-                    manual_text_input = st.text_area(
-                        "📝 **Paste your resume content here (Alternative)**",
-                        height=200,
-                        placeholder="Copy and paste your resume content here...",
-                        help="For scanned PDFs or image-based resumes",
-                        key="fallback_text_input"
+        # Handle button clicks
+        if general_btn:
+            st.session_state.analysis_choice = "general"
+            st.session_state.analysis_result = None
+        elif appier_btn:
+            st.session_state.analysis_choice = "appier"
+            st.session_state.analysis_result = None
+        
+        # Process analysis based on choice
+        if st.session_state.analysis_choice and st.session_state.analysis_result is None:
+            with st.spinner("🔍 AI正在分析您的履歷..." if st.session_state.analysis_choice == "appier" else "🔍 AI is reviewing your profile..."):
+                resume_text = extract_text_from_pdf(uploaded_file)
+                
+                # 如果PDF提取失敗，顯示替代方案
+                if not resume_text:
+                    st.error("🚨 **Cannot extract text from PDF!**" if st.session_state.analysis_choice == "general" else "🚨 **無法從PDF提取文字!**")
+                    with st.expander("🛠️ **Alternative Solution - Click to expand**" if st.session_state.analysis_choice == "general" else "🛠️ **替代方案 - 點擊展開**", expanded=True):
+                        if st.session_state.analysis_choice == "general":
+                            st.markdown("""
+                            **📄 This usually happens when:**
+                            - 🖼️ **Scanned PDF**: Resume was scanned as an image
+                            - 📷 **Image-based PDF**: Text is embedded in images, not as text
+                            - 🔒 **Password-protected**: PDF has security restrictions
+                            """)
+                        else:
+                            st.markdown("""
+                            **📄 這種情況通常發生在:**
+                            - 🖼️ **掃描的PDF**: 履歷是作為圖像掃描的
+                            - 📷 **圖像化PDF**: 文字嵌入在圖像中，而不是文字
+                            - 🔒 **密碼保護**: PDF有安全限制
+                            """)
+                        
+                        manual_text_input = st.text_area(
+                            "📝 **Paste your resume content here (Alternative)**" if st.session_state.analysis_choice == "general" else "📝 **在此貼上您的履歷內容**",
+                            height=200,
+                            placeholder="Copy and paste your resume content here..." if st.session_state.analysis_choice == "general" else "請複製並貼上您的履歷內容...",
+                            help="For scanned PDFs or image-based resumes" if st.session_state.analysis_choice == "general" else "針對掃描或圖像化PDF的替代方案",
+                            key="fallback_text_input"
+                        )
+                        
+                        if manual_text_input.strip():
+                            analyze_btn_text = "Analyze with Text Input" if st.session_state.analysis_choice == "general" else "用文字輸入分析"
+                            if st.button(analyze_btn_text, type="primary"):
+                                if st.session_state.analysis_choice == "general":
+                                    analysis = analyze_resume_general(manual_text_input.strip(), target_role)
+                                    if analysis:
+                                        st.session_state.analysis_result = ("general", analysis)
+                                        st.rerun()
+                                else:  # appier
+                                    analysis = analyze_appier_soft_skills(manual_text_input.strip())
+                                    if analysis:
+                                        st.session_state.analysis_result = ("appier", analysis)
+                                        st.rerun()
+                else:
+                    # PDF extraction successful
+                    if st.session_state.analysis_choice == "general":
+                        analysis = analyze_resume_general(resume_text, target_role)
+                        if analysis:
+                            st.session_state.analysis_result = ("general", analysis)
+                    else:  # appier
+                        analysis = analyze_appier_soft_skills(resume_text)
+                        if analysis:
+                            st.session_state.analysis_result = ("appier", analysis)
+        
+        # Display results
+        if st.session_state.analysis_result:
+            analysis_type, analysis_content = st.session_state.analysis_result
+            
+            if analysis_type == "general":
+                st.success("✅ **Analysis completed**")
+                st.markdown("### 📝 Resume Optimization Report")
+                st.markdown(analysis_content)
+            else:  # appier
+                st.success("✅ **軟實力分析完成**")
+                st.markdown("### 🌟 Appier軟實力分析報告")
+                st.markdown(analysis_content)
+                
+                # Export options for Appier analysis
+                st.divider()
+                st.subheader("📥 匯出選項")
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    text_content, filename = export_analysis_to_text(analysis_content, "appier_soft_skills_analysis")
+                    st.download_button(
+                        label="📄 下載完整報告 (TXT)",
+                        data=text_content,
+                        file_name=filename,
+                        mime="text/plain"
                     )
-                    
-                    if manual_text_input.strip() and st.button("Analyze with Text Input", type="primary"):
-                        with st.spinner("🔍 AI is analyzing your text..."):
-                            analysis = analyze_resume_general(manual_text_input.strip(), target_role)
-                            if analysis:
-                                st.success("✅ **Analysis completed using manual text input**")
-                                st.markdown("### 📝 Resume Optimization Report")
-                                st.markdown(analysis)
-            else:
-                # PDF extraction successful
-                analysis = analyze_resume_general(resume_text, target_role)
-                if analysis:  # Only show results if analysis was successful
-                    st.markdown("### 📝 Resume Optimization Report")
-                    st.markdown(analysis)
+                with col2:
+                    st.info("🔄 JSON格式匯出\n(開發中)")
+        
+        # Reset button to choose different analysis
+        if st.session_state.analysis_result:
+            st.divider()
+            if st.button("🔄 Choose Different Analysis", type="secondary"):
+                st.session_state.analysis_choice = None
+                st.session_state.analysis_result = None
+                st.rerun()
 
 # --- MODE 2: COMPARE WITH JD ---
 elif mode == "🎯 Compare with Job Description":
@@ -985,185 +1079,3 @@ elif mode == "🎯 Compare with Job Description":
                 st.error("⚠️ Please upload a PDF resume")
             if not jd_input:
                 st.error("⚠️ Please enter a job description")
-
-# --- MODE 3: APPIER SOFT SKILLS ANALYSIS ---
-elif mode == "🌟 Appier Soft Skills Analysis":
-    st.header("Appier軟實力分析")
-    st.write("針對Appier公司軟實力框架進行詳細分析，包含6大類別32項具體技能的評估。")
-    
-    # Display framework overview
-    with st.expander("📋 查看 Appier 軟實力框架 (6大類別, 32項技能)", expanded=False):
-        for category, skills in APPIER_SOFT_SKILLS_FRAMEWORK.items():
-            st.markdown(f"**{category}** ({len(skills)} 項技能):")
-            for i, skill in enumerate(skills, 1):
-                st.markdown(f"   {i}. {skill}")
-            st.markdown("")
-    
-    uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"], key="appier_skills_upload")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        analyze_btn = st.button("🌟 開始軟實力分析", type="primary")
-    with col2:
-        st.info("💡 基於1-10分制評估32項軟實力技能")
-    
-    if uploaded_file and analyze_btn:
-        with st.spinner("🔍 AI正在分析您的軟實力..."):
-            resume_text = extract_text_from_pdf(uploaded_file)
-            
-            # 如果PDF提取失敗，顯示替代方案
-            if not resume_text:
-                st.error("🚨 **無法從PDF提取文字!**")
-                with st.expander("🛠️ **替代方案 - 點擊展開**", expanded=True):
-                    st.markdown("""
-                    **📄 這種情況通常發生在:**
-                    - 🖼️ **掃描的PDF**: 履歷是作為圖像掃描的
-                    - 📷 **圖像化PDF**: 文字嵌入在圖像中，而不是文字
-                    - 🔒 **密碼保護**: PDF有安全限制
-                    """)
-                    
-                    manual_text_input_appier = st.text_area(
-                        "📝 **在此貼上您的履歷內容**",
-                        height=150,
-                        placeholder="請複製並貼上您的履歷內容...",
-                        key="fallback_text_input_appier"
-                    )
-                    
-                    if manual_text_input_appier.strip() and st.button("用文字輸入分析軟實力", type="primary"):
-                        with st.spinner("🔍 AI正在分析您的軟實力..."):
-                            analysis = analyze_appier_soft_skills(manual_text_input_appier.strip())
-                            if analysis:
-                                st.success("✅ **使用手動文字輸入完成軟實力分析**")
-                                st.markdown("### 🌟 Appier軟實力分析報告")
-                                st.markdown(analysis)
-                                
-                                # Export options
-                                st.divider()
-                                st.subheader("📥 匯出選項")
-                                col1, col2 = st.columns(2)
-                                
-                                with col1:
-                                    text_content, filename = export_analysis_to_text(analysis, "appier_soft_skills_analysis")
-                                    st.download_button(
-                                        label="📄 下載完整報告 (TXT)",
-                                        data=text_content,
-                                        file_name=filename,
-                                        mime="text/plain"
-                                    )
-                                with col2:
-                                    st.info("🔄 JSON格式匯出\n(開發中)")
-            else:
-                # PDF extraction successful
-                analysis = analyze_appier_soft_skills(resume_text)
-                if analysis:  # Only show results if analysis was successful
-                    st.markdown("### 🌟 Appier軟實力分析報告")
-                    st.markdown(analysis)
-                    
-                    # Export options
-                    st.divider()
-                    st.subheader("📥 匯出選項")
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        # Export as text file
-                        text_content, filename = export_analysis_to_text(analysis, "appier_soft_skills_analysis")
-                        st.download_button(
-                            label="📄 下載完整報告 (TXT)",
-                            data=text_content,
-                            file_name=filename,
-                            mime="text/plain"
-                        )
-                    
-                    with col2:
-                        st.info("🔄 JSON格式匯出\n(開發中)")
-
-# --- MODE 4: DETAILED SKILLS ANALYSIS ---
-elif mode == "🔍 Detailed Skills Analysis":
-    st.header("Detailed Skills Analysis & Team Building")
-    st.write("Deep dive into resume skills for internal project team building and talent mapping.")
-    
-    uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"], key="skills_upload")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        analyze_btn = st.button("🔍 Start Skills Analysis", type="primary")
-    with col2:
-        st.info("💡 This mode focuses on skill extraction & categorization")
-    
-    if uploaded_file and analyze_btn:
-        with st.spinner("🔍 AI is reviewing your profile..."):
-            resume_text = extract_text_from_pdf(uploaded_file)
-            
-            # 如果PDF提取失敗，顯示替代方案
-            if not resume_text:
-                st.error("🚨 **Cannot extract text from PDF!**")
-                with st.expander("🛠️ **Alternative Solution - Click to expand**", expanded=True):
-                    st.markdown("""
-                    **📄 This usually happens when:**
-                    - 🖼️ **Scanned PDF**: Resume was scanned as an image
-                    - 📷 **Image-based PDF**: Text is embedded in images
-                    - 🔒 **Password-protected**: PDF has security restrictions
-                    """)
-                    
-                    manual_text_input_skills = st.text_area(
-                        "📝 **Paste your resume content here**",
-                        height=150,
-                        placeholder="Copy and paste your resume content here...",
-                        key="fallback_text_input_skills"
-                    )
-                    
-                    if manual_text_input_skills.strip() and st.button("Analyze Skills with Text Input", type="primary"):
-                        with st.spinner("🔍 AI is analyzing your skills..."):
-                            analysis = analyze_skills_detailed(manual_text_input_skills.strip())
-                            if analysis:
-                                st.success("✅ **Skills analysis completed using manual text input**")
-                                st.markdown("### 📊 Detailed Skills Analysis Report")
-                                st.markdown(analysis)
-                                
-                                # Export options
-                                st.divider()
-                                st.subheader("📥 Export Options")
-                                col1, col2, col3 = st.columns(3)
-                                
-                                with col1:
-                                    text_content, filename = export_analysis_to_text(analysis, "skills_analysis")
-                                    st.download_button(
-                                        label="📄 Download Full Report (TXT)",
-                                        data=text_content,
-                                        file_name=filename,
-                                        mime="text/plain"
-                                    )
-            else:
-                # PDF extraction successful
-                analysis = analyze_skills_detailed(resume_text)
-                if analysis:  # Only show results if analysis was successful
-                    st.markdown("### 📊 Detailed Skills Analysis Report")
-                    st.markdown(analysis)
-                    
-                    # Export options
-                    st.divider()
-                    st.subheader("📥 Export Options")
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        # Export as text file
-                        text_content, filename = export_analysis_to_text(analysis, "skills_analysis")
-                        st.download_button(
-                            label="📄 Download Full Report (TXT)",
-                            data=text_content,
-                            file_name=filename,
-                            mime="text/plain"
-                        )
-                    
-                    with col2:
-                        # Export skills summary as CSV
-                        csv_content = export_skills_to_csv(analysis)
-                        st.download_button(
-                            label="📊 Download Skills List (CSV)", 
-                            data=csv_content,
-                            file_name="skills_summary.csv",
-                            mime="text/csv"
-                        )
-                    
-                    with col3:
-                        st.info("🔄 Google Sheets Integration\n(In Development)")
